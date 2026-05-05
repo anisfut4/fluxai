@@ -4,7 +4,7 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 const RAILWAY_URL = 'https://fluxai-production.up.railway.app/api/gpt-image';
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.writeHead(204, CORS); res.end(); return; }
   if (req.method !== 'POST') { res.writeHead(405, CORS); res.end('Method Not Allowed'); return; }
   const authHeader = req.headers['authorization'] || 'Bearer none';
@@ -26,4 +26,4 @@ export default async function handler(req, res) {
     res.writeHead(502, CORS);
     res.end(JSON.stringify({ error: err.message }));
   }
-}
+};

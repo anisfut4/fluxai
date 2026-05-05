@@ -5,7 +5,7 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, x-api-key, anthropic-version, Authorization',
 };
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.writeHead(204, CORS); res.end(); return; }
   if (req.method !== 'POST') { res.writeHead(405, CORS); res.end('Method Not Allowed'); return; }
   const body = await new Promise((resolve, reject) => {
@@ -39,4 +39,4 @@ export default async function handler(req, res) {
     pr.on('error', e => { res.writeHead(502, CORS); res.end(JSON.stringify({ error: e.message })); resolve(); });
     pr.write(body); pr.end();
   });
-}
+};
