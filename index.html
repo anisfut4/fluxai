@@ -1703,16 +1703,28 @@ Shot feel: editorial lifestyle photography, like a high-end magazine spread. Hum
 Film tones: Fuji 400H or natural daylight color grading. Real shadows, real textures.
 No text. Square 1:1.
 
-Return ONLY a valid JSON array with exactly 7 objects, no markdown, no code blocks:
-[
-  {"type":"studio","prompt":"...detailed prompt for image 1..."},
-  {"type":"lifestyle","prompt":"...detailed prompt for image 2..."},
-  {"type":"specs","prompt":"...detailed prompt for image 3..."},
-  {"type":"benefits","prompt":"...detailed prompt for image 4..."},
-  {"type":"usage","prompt":"...detailed prompt for image 5..."},
-  {"type":"ambiance1","prompt":"...detailed prompt for image 6..."},
-  {"type":"ambiance2","prompt":"...detailed prompt for image 7..."}
-]`;
+Return ONLY a valid JSON object, no markdown, no code blocks:
+{
+  "specs": [
+    {"label": "Matière", "value": "valeur réelle"},
+    {"label": "Dimensions", "value": "valeur réelle"},
+    {"label": "Capacité", "value": "valeur réelle"}
+  ],
+  "benefits": [
+    {"icon": "✅", "text": "bénéfice réel"},
+    {"icon": "♻️", "text": "bénéfice réel"}
+  ],
+  "occasions": ["occasion1", "occasion2", "occasion3"],
+  "prompts": [
+    {"type":"studio","prompt":"...detailed prompt for image 1..."},
+    {"type":"lifestyle","prompt":"...detailed prompt for image 2..."},
+    {"type":"specs","prompt":"...detailed prompt for image 3..."},
+    {"type":"benefits","prompt":"...detailed prompt for image 4..."},
+    {"type":"usage","prompt":"...detailed prompt for image 5..."},
+    {"type":"ambiance1","prompt":"...detailed prompt for image 6..."},
+    {"type":"ambiance2","prompt":"...detailed prompt for image 7..."}
+  ]
+}`;
 
   const res = await fetch(`${PROXY.anthropic}/v1/messages`, {
     method: 'POST',
@@ -1733,14 +1745,20 @@ Return ONLY a valid JSON array with exactly 7 objects, no markdown, no code bloc
   const data = await res.json();
   const text = data.content.map(c => c.text || '').join('').trim();
 
-  // Parse JSON array from Claude response
+  // Parse JSON object from Claude response
   const parsed = parseJ(text);
-  if (!Array.isArray(parsed) || parsed.length !== 7) throw new Error('Claude n\'a pas retourné 7 prompts valides');
+
+  // Support ancien format array et nouveau format objet
+  const promptsArray = Array.isArray(parsed) ? parsed : (parsed?.prompts || []);
+  if (!promptsArray || promptsArray.length !== 7) throw new Error('Claude n\'a pas retourné 7 prompts valides');
+
+  // Afficher les specs extraites si disponibles
+  if (!Array.isArray(parsed) && (parsed.specs || parsed.benefits || parsed.occasions)) {
+    showSpecs(parsed);
+  }
 
   const LABELS = ['Fond blanc punchy', 'Lifestyle fond blanc', 'Infographie specs', 'Infographie bénéfices', 'Usage & occasions', 'Ambiance produit en action', 'Ambiance lifestyle scène'];
-  // Images 1-5: edit du produit source. Images 6-7: génération pure de scène
-  // Toutes les 7 images utilisent le produit source en input (edit)
-  return parsed.map((p, i) => ({
+  return promptsArray.map((p, i) => ({
     label: LABELS[i],
     useImage: true,
     prompt: `PHOTO EDITING TASK — NOT IMAGE GENERATION. You are editing an existing product photo. The product in the input image MUST remain pixel-perfect identical. Do NOT recreate, redesign, reimagine or replace the product. Copy it exactly as-is — same shape, same colors, same text on packaging, same proportions, same materials. Only change what is explicitly requested (background, lighting, added elements). ${p.prompt}`,
@@ -1793,7 +1811,7 @@ async function genOneGPTImage(p, imageData, provider) {
 
   if (!res.ok) {
     const d = await res.json().catch(() => ({}));
-    throw new Error(d.error?.message || d.error || `OpenAI HTTP ${res.status}`);
+    throw new Error(d.error?.message || d.error || `${provider === 'nanobananaPro' ? 'Nano Banana Pro' : 'GPT Image'} HTTP ${res.status}`);
   }
 
   const data = await res.json();
@@ -1812,8 +1830,11 @@ async function startImageGen() {
   const desc = document.getElementById('img-desc').value.trim();
   if(!name && !desc) { alert('Renseigne au minimum le nom et la description'); return; }
 
+  const globalProvider = document.querySelector('input[name="ia-global"]:checked')?.value || 'gpt';
   const openaiKey = document.getElementById('openai-key').value.trim();
-  if (!openaiKey) { alert('Clé OpenAI manquante — colle-la dans le champ API fal.ai'); return; }
+  if (globalProvider === 'gpt' && !openaiKey) { alert('Clé OpenAI manquante — colle-la dans Réglages'); return; }
+  const geminiKeyCheck = document.getElementById('gemini-key').value.trim();
+  if (globalProvider === 'nanobananaPro' && !geminiKeyCheck) { alert('Clé Gemini manquante — colle-la dans Réglages'); return; }
 
   IMG.generating = true;
   const btn = document.getElementById('btn-img-gen');
