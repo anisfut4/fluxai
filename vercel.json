@@ -3,5 +3,9 @@
   "functions": {
     "api/anthropic.js": { "maxDuration": 60 },
     "api/gpt-image.js": { "maxDuration": 60 }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/anthropic/(.*)", "destination": "/api/anthropic" },
+    { "source": "/api/gpt-image/(.*)", "destination": "/api/gpt-image" }
+  ]
 }
