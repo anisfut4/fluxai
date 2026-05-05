@@ -1,14 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "api/*.js", "use": "@vercel/node" }
-  ],
-  "routes": [
-    { "src": "/api/anthropic", "dest": "/api/anthropic.js" },
-    { "src": "/api/gpt-image", "dest": "/api/gpt-image.js" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ],
   "functions": {
     "api/anthropic.js": { "maxDuration": 60 },
     "api/gpt-image.js": { "maxDuration": 60 }
