@@ -64,7 +64,29 @@ option{background:#1a1a23}
 .wbox{background:rgba(245,200,64,.07);border:1px solid rgba(245,200,64,.2);border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--acc);line-height:1.6;margin-bottom:10px}
 .obox{background:rgba(56,184,114,.07);border:1px solid rgba(56,184,114,.2);border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--ok);line-height:1.6;margin-bottom:10px}
 .ebox{background:rgba(224,72,72,.07);border:1px solid rgba(224,72,72,.2);border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--er);line-height:1.6;margin-bottom:10px}
-hr.div{border:none;border-top:1px solid var(--b1);margin:12px 0}
+/* Stepper */
+.step-row{display:flex;align-items:flex-start;gap:8px;padding:4px 0}
+.step-dot{font-size:14px;width:18px;text-align:center;flex-shrink:0;line-height:1.4;transition:all .2s}
+.step-dot.pending{color:var(--mu2)}
+.step-dot.running{color:var(--acc);animation:pulse .8s ease-in-out infinite alternate}
+.step-dot.done{color:var(--ok)}
+.step-dot.error{color:var(--er)}
+.step-info{flex:1;min-width:0}
+.step-label{font-size:12px;font-weight:500;color:var(--txt)}
+.step-sub{font-size:10px;color:var(--mu);margin-top:1px;font-family:'DM Mono',monospace}
+.step-connector{width:1px;height:8px;background:var(--b2);margin-left:9px}
+@keyframes pulse{from{opacity:.4}to{opacity:1}}
+/* Prompt viewer blocks */
+.pv-block{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:9px 11px}
+.pv-block.pv-done{border-color:rgba(56,184,114,.2)}
+.pv-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:6px}
+.pv-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--mu);letter-spacing:.6px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-text{font-size:11px;color:var(--mu);line-height:1.6;max-height:80px;overflow:hidden;position:relative;cursor:pointer;transition:max-height .3s}
+.pv-text.expanded{max-height:600px}
+.pv-text::after{content:'';position:absolute;bottom:0;left:0;right:0;height:24px;background:linear-gradient(transparent,var(--s2));pointer-events:none;transition:opacity .3s}
+.pv-text.expanded::after{opacity:0}
+.pv-expand{font-size:9px;color:var(--mu2);cursor:pointer;text-align:right;margin-top:2px}
+.pv-expand:hover{color:var(--acc)}
 .tabs{display:flex;border-bottom:1px solid var(--b1);margin-bottom:14px;gap:2px}
 .tab{padding:8px 14px;font-size:12px;cursor:pointer;color:var(--mu);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
 .tab.active{color:var(--acc);border-bottom-color:var(--acc);font-weight:500}
@@ -666,45 +688,44 @@ hr.div{border:none;border-top:1px solid var(--b1);margin:12px 0}
       </div>
     </div>
 
-    <!-- Col 3: Config -->
-    <div class="panel">
-      <div class="ptitle">Modèles fal.ai</div>
+    <!-- Col 3: Progress + Prompts -->
+    <div class="panel" style="display:flex;flex-direction:column;gap:0;overflow:hidden">
 
-      <div class="card">
-        <div class="ch">Répartition par image</div>
-        <div class="cs">Meilleur outil pour chaque besoin</div>
-        <div style="font-size:11px;line-height:2;color:var(--mu)">
-          <div><span style="color:var(--acc)">1-5</span> <span style="color:var(--txt)">Nano Banana Pro</span> — un seul modèle</div>
-          <div style="margin-top:5px;color:var(--mu2);font-size:10px">Text-to-image depuis la description<br>Meilleur rendu texte du marché<br>Pas besoin d'uploader l'image</div>
+      <!-- Progress stepper -->
+      <div class="ptitle">Progression</div>
+      <div id="img-stepper" style="margin-bottom:14px">
+        <div class="step-row" id="step-analyse">
+          <div class="step-dot" id="sdot-analyse">○</div>
+          <div class="step-info">
+            <div class="step-label">Analyse produit</div>
+            <div class="step-sub" id="ssub-analyse">En attente</div>
+          </div>
         </div>
-        <hr class="div" style="margin:10px 0">
-        <div style="font-size:11px;color:var(--mu);display:grid;grid-template-columns:1fr auto;gap:3px 12px">
-          <span>5 images / produit</span><span style="color:var(--acc)">~0,27 $</span>
-          <span>100 produits</span><span style="color:var(--acc)">~15 $</span>
-          <span>Résolution min</span><span style="color:var(--txt)">1024×1024</span>
+        <div class="step-connector"></div>
+        <div id="step-prompts-wrap">
+          <!-- slots 1-7 injected dynamically -->
         </div>
-      </div>
-
-      <div class="card">
-        <div class="ch">5 images — rôles</div>
-        <div style="font-size:11px;color:var(--mu);line-height:2">
-          <div><span style="color:var(--acc);font-weight:500">1 ·</span> Studio fond blanc — éclairage amélioré, produit centré</div>
-          <div><span style="color:var(--acc);font-weight:500">2 ·</span> Lifestyle fond blanc — ambiance, décor catégorie</div>
-          <div><span style="color:var(--acc);font-weight:500">3 ·</span> Infographie specs — callouts, flèches, dimensions</div>
-          <div><span style="color:var(--acc);font-weight:500">4 ·</span> Infographie bénéfices — arguments, icônes</div>
-          <div><span style="color:var(--acc);font-weight:500">5 ·</span> Usage & occasions — contexte d'utilisation</div>
+        <div class="step-connector"></div>
+        <div class="step-row" id="step-images">
+          <div class="step-dot" id="sdot-images">○</div>
+          <div class="step-info">
+            <div class="step-label">Génération images</div>
+            <div class="step-sub" id="ssub-images">En attente</div>
+          </div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="ch">Prompts générés</div>
-        <div class="cs">Aperçu après génération</div>
-        <div id="prompts-preview"><div style="color:var(--mu2);font-size:11px;text-align:center;padding:12px">Lance une génération pour voir</div></div>
+      <hr class="div">
+
+      <!-- Prompts viewer -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-shrink:0">
+        <div class="ptitle" style="margin-bottom:0">Prompts générés</div>
+        <button class="cbtn" id="btn-copy-all-prompts" style="display:none" onclick="copyAllImgPrompts()">📋 Tout copier</button>
+      </div>
+      <div id="img-prompts-viewer" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px">
+        <div style="color:var(--mu2);font-size:11px;text-align:center;padding:20px 0">Lance une génération pour voir les prompts</div>
       </div>
 
-      <div class="ibox" style="margin-top:10px">
-        💡 Les infographies (3-4-5) lisent ta description produit et extraient automatiquement specs, dimensions, compatibilités, arguments.
-      </div>
     </div>
 
   </div>
@@ -936,7 +957,93 @@ function setPanel(p) {
   });
 }
 
-// ============ PROMPT BUILDER REF IMAGE ============
+// ============ IMAGE STEPPER UX ============
+const STEP_LABELS = ['Fond blanc studio','Lifestyle premium','Specs infographie','Bénéfices infographie','Occasions d\'usage','Ambiance cinématique','Lifestyle intime'];
+
+function stepperInit() {
+  // Reset analyse step
+  stepSet('analyse', 'pending', 'En attente');
+  stepSet('images', 'pending', 'En attente');
+  // Build 7 slot steps
+  const wrap = document.getElementById('step-prompts-wrap');
+  wrap.innerHTML = STEP_LABELS.map((l,i) => `
+    <div class="step-connector"></div>
+    <div class="step-row" id="step-prompt-${i}">
+      <div class="step-dot pending" id="sdot-prompt-${i}">○</div>
+      <div class="step-info">
+        <div class="step-label">Prompt ${i+1} — ${l}</div>
+        <div class="step-sub" id="ssub-prompt-${i}">En attente</div>
+      </div>
+    </div>`).join('');
+  // Reset prompt viewer
+  document.getElementById('img-prompts-viewer').innerHTML =
+    '<div style="color:var(--mu2);font-size:11px;text-align:center;padding:20px 0">Les prompts apparaîtront ici...</div>';
+  document.getElementById('btn-copy-all-prompts').style.display = 'none';
+}
+
+function stepSet(id, state, sub) {
+  const dot = document.getElementById('sdot-' + id);
+  const subEl = document.getElementById('ssub-' + id);
+  if (!dot) return;
+  dot.className = 'step-dot ' + state;
+  dot.textContent = state === 'done' ? '✓' : state === 'error' ? '✗' : state === 'running' ? '◉' : '○';
+  if (subEl && sub) subEl.textContent = sub;
+}
+
+function stepPromptSet(i, state, sub) { stepSet(`prompt-${i}`, state, sub); }
+
+let _imgAllPrompts = [];
+
+function promptViewerAdd(i, label, text) {
+  _imgAllPrompts[i] = { label, text };
+  const viewer = document.getElementById('img-prompts-viewer');
+  // Remove placeholder
+  const placeholder = viewer.querySelector('[style*="padding:20px"]');
+  if (placeholder) placeholder.remove();
+
+  const block = document.createElement('div');
+  block.className = 'pv-block pv-done';
+  block.id = `pv-block-${i}`;
+  const shortText = text.replace(/</g,'&lt;');
+  block.innerHTML = `
+    <div class="pv-header">
+      <span class="pv-label">${i+1} · ${label}</span>
+      <button class="cbtn" onclick="copyImgPrompt(${i})" style="flex-shrink:0">Copier</button>
+    </div>
+    <div class="pv-text" id="pv-text-${i}">${shortText}</div>
+    <div class="pv-expand" onclick="pvToggle(${i})">▼ Voir tout</div>`;
+  viewer.appendChild(block);
+
+  // Show copy all button once we have at least one
+  document.getElementById('btn-copy-all-prompts').style.display = '';
+}
+
+function pvToggle(i) {
+  const el = document.getElementById(`pv-text-${i}`);
+  const btn = el.nextElementSibling;
+  const expanded = el.classList.toggle('expanded');
+  btn.textContent = expanded ? '▲ Réduire' : '▼ Voir tout';
+}
+
+function copyImgPrompt(i) {
+  const p = _imgAllPrompts[i];
+  if (!p) return;
+  navigator.clipboard.writeText(p.text).then(() => {
+    const btn = document.querySelector(`#pv-block-${i} .cbtn`);
+    if (btn) { const o=btn.textContent; btn.textContent='✅'; btn.classList.add('ok'); setTimeout(()=>{btn.textContent=o;btn.classList.remove('ok')},1800); }
+  });
+}
+
+function copyAllImgPrompts() {
+  const all = _imgAllPrompts.filter(Boolean).map((p,i)=>`=== ${i+1} · ${p.label} ===\n${p.text}`).join('\n\n---\n\n');
+  navigator.clipboard.writeText(all).then(() => {
+    const btn = document.getElementById('btn-copy-all-prompts');
+    const o = btn.textContent; btn.textContent='✅ Copié !';
+    setTimeout(()=>btn.textContent=o, 1800);
+  });
+}
+
+
 let pbRefImageB64 = null;
 let pbRefImageType = 'image/jpeg';
 
@@ -2350,6 +2457,7 @@ Background color for infographics: ${bg}`;
 
   // ── STEP 1: fast product analysis ─────────────────────────────────────────
   imgLog('lin', 'Analyse produit…');
+  stepSet('analyse', 'running', 'Analyse en cours…');
   const analysisRes = await fetch(`${PROXY.anthropic}/v1/messages`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
@@ -2368,6 +2476,7 @@ ${productInfo}
   });
   const aData = await analysisRes.json();
   const analysis = JSON.parse((aData.content?.[0]?.text||'').replace(/```json|```/g,'').trim());
+  stepSet('analyse', 'done', `Univers: ${analysis.universe} · ${analysis.material?.substring(0,40)}…`);
 
   // Show specs immediately
   if (analysis.specs || analysis.benefits || analysis.occasions) showSpecs(analysis);
@@ -2438,6 +2547,7 @@ Camera: Sony A7R IV, 85mm, f/1.8, ISO 400-640. NO TEXT. Square 1:1, 4K.`,
 
   for (let i = 0; i < 7; i++) {
     imgLog('lin', `Prompt ${i+1}/7 — ${LABELS[i]}…`);
+    stepPromptSet(i, 'running', 'Génération…');
     const slotRes = await fetch(`${PROXY.anthropic}/v1/messages`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
@@ -2459,11 +2569,10 @@ Minimum 200 words. Raw prompt text only.` }]
     });
     const slotData = await slotRes.json();
     const promptText = (slotData.content?.[0]?.text||'').trim();
-    prompts.push({
-      label: LABELS[i],
-      useImage: true,
-      prompt: `PHOTO EDITING TASK — NOT IMAGE GENERATION. The product in the input image MUST remain pixel-perfect identical. Do NOT recreate or redesign the product. ${promptText}`,
-    });
+    const fullPrompt = `PHOTO EDITING TASK — NOT IMAGE GENERATION. The product in the input image MUST remain pixel-perfect identical. Do NOT recreate or redesign the product. ${promptText}`;
+    prompts.push({ label: LABELS[i], useImage: true, prompt: fullPrompt });
+    stepPromptSet(i, 'done', `${fullPrompt.length} chars`);
+    promptViewerAdd(i, LABELS[i], fullPrompt);
     imgLog('lok', `✓ Prompt ${i+1} — ${LABELS[i]}`);
   }
 
@@ -2543,6 +2652,8 @@ async function startImageGen() {
   if (globalProvider === 'nanobananaPro' && !geminiKeyCheck) { alert('Clé Gemini manquante — colle-la dans Réglages'); return; }
 
   IMG.generating = true;
+  _imgAllPrompts = [];
+  stepperInit();
   const btn = document.getElementById('btn-img-gen');
   btn.disabled = true;
   btn.innerHTML = '<span class="img-spin" style="width:12px;height:12px;border-width:2px;display:inline-block"></span> Génération…';
@@ -2556,6 +2667,7 @@ async function startImageGen() {
     imgLog('lok', `✓ 5 prompts générés par Claude`);
 
     imgLog('lin', 'Lancement génération Nano Banana Pro…');
+    stepSet('images', 'running', 'Génération en cours…');
     let successCount = 0;
 
     for(let i=0;i<7;i++) {
@@ -2579,7 +2691,10 @@ async function startImageGen() {
 
     if(successCount > 0) {
       imgLog('lok', `Terminé — ${successCount}/7 images générées`);
+      stepSet('images', 'done', `${successCount}/7 images générées`);
       document.getElementById('img-dl-all').style.display = 'block';
+    } else {
+      stepSet('images', 'error', 'Aucune image générée');
     }
 
   } catch(e) {
