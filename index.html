@@ -1540,6 +1540,7 @@ Language: ${lang==='fr'?'FRENCH':'ENGLISH'}. Minimum 200 words. Raw prompt text 
     alert('Erreur: ' + e.message);
   }
 }
+function setCreateTab(t) {
   ['manual','csv'].forEach(x=>{
     document.getElementById('create-'+x).style.display=x===t?'':'none';
     document.getElementById('ctab-'+x).classList.toggle('active',x===t);
