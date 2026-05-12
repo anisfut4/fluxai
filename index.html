@@ -1568,11 +1568,14 @@ The product MUST remain EXACTLY identical to the input image.
 - Do NOT hallucinate a different product — this is photo editing, not product creation
 - Preserve every detail: shape, colors, text on packaging, proportions, materials
 
-REALISM MANDATE — every prompt must describe how to achieve photographic realism:
-- Specify camera: lens (35mm/50mm/85mm), aperture (f/1.8–f/8), film stock (Kodak Portra 400, Fuji 400H) when relevant
-- Describe light source precisely: golden hour, softbox, window light, practical lights, overcast
-- No AI aesthetics: no plastic textures, no unnatural glow, no over-saturation, no CGI feel
-- Real shadows, real grain, real depth — like a photo taken by a human photographer
+REALISM MANDATE — 4K PHOTOGRAPHIC QUALITY, NON-NEGOTIABLE:
+- Specify camera gear precisely: lens (35mm/50mm/85mm), aperture (f/1.4–f/8), ISO (100–800), film stock (Kodak Portra 400 for warm, Fuji 400H for cool/social)
+- Describe light source with physical precision: golden hour sun at 15° angle, large softbox 120cm at 45°, window light through sheer curtain, etc.
+- KILL ALL AI AESTHETICS: no plastic-looking surfaces, no unnatural edge glow, no over-saturation, no CGI render feel, no floating objects
+- Translucent/frosted PP products (ecocup, etc): describe how light refracts and glows through the semi-transparent material — internal warm glow, soft edge translucency
+- Film grain: 15-20% for lifestyle/cinematic shots, 5-8% for studio/infographic
+- Shadows: describe contact shadow beneath product and cast shadow direction explicitly
+- Surface interaction: product must sit ON a real surface with realistic contact shadow and subtle surface reflection
 
 CREATIVE FREEDOM — adapt to each product's universe:
 - Pyro/action products → raw energy, dark drama, urban grit, action sport aesthetic
@@ -1618,90 +1621,134 @@ Generate exactly 7 image prompts for Nano Banana Pro (Gemini 3 Pro Image).
 Each prompt must be detailed, specific, and constraint-heavy — like a professional Midjourney prompt.
 Include lighting details, composition rules, typography specs, color values, and explicit preservation rules.
 
-IMAGE 1 — STUDIO FOND BLANC (Amazon main image):
-THIS IS A BACKGROUND REPLACEMENT ONLY. The product stays 100% identical to the input image.
-Task: replace ONLY the background with pure white #FFFFFF. Touch nothing else on the product.
-The product shape, packaging design, colors, text, proportions are FROZEN — do not alter any pixel of the product itself.
-Lighting adjustment: add professional studio strobe key light upper-left 45°, soft fill from right. Keep product looking like the same real physical object.
-Soft contact shadow beneath product on white surface. Product centered, filling 85% of frame.
-No text, no props. Amazon main image compliant. Square 1:1.
+UNIVERSE DETECTION — FIRST STEP BEFORE WRITING ANY PROMPT:
+Analyze the product name, category, and description to identify the product universe. Choose ONE:
+- PYRO/ACTION: fumigènes, feux d'artifice, poudres colorées, bombes de fumée → urban grit, dark drama, athletic energy, raw cinematic
+- ECO/SUSTAINABLE: gobelets réutilisables, vaisselle éco, produits recyclables, made in France → Scandinavian minimalism, warm earth tones, natural light, honest photography
+- PARTY/CELEBRATION: confettis, décorations fête, ballons, cotillons, accessoires anniversaire → playful, colorful, joyful, festive bokeh, warm golden light
+- WEDDING/EVJF: accessoires mariage, enterrement de vie de jeune fille, fleurs, déco romantique → soft light, floral accents, elegant, pastel, romantic
+- SPORT/OUTDOOR: équipement sport, plein air, camping, randonnée → natural landscapes, action, golden hour, raw energy
+- FOOD/DRINK: alimentation, boissons, cuisine → table scenes, appetizing light, warm tones, convivial
+- HOME/DECO: décoration intérieure, textile, mobilier → interior scenes, lifestyle home, clean aesthetic
+- BABY/KIDS: produits bébé, jouets, puériculture → soft, pastel, warm, gentle light, cheerful
+- BEAUTY/WELLNESS: cosmétiques, soins, parfums → clean flat lay, marble or linen surfaces, elegant minimal
+- OTHER: infer the best visual universe from context
 
-IMAGE 2 — LIFESTYLE AMBIANCE (product in real human context):
-Use the provided image as the base product. Keep it EXACTLY identical.
-Create a real-world scene that fits the product's universe and target audience.
-Adapt scene completely to product identity — do NOT use a generic lifestyle background.
-Camera: 50mm or 85mm, f/2.0–f/2.8, golden hour or overcast natural light, slight grain.
-Background: naturally blurred (bokeh), contextually appropriate, tells a story.
-Product is held, used, or placed naturally — sharp while background breathes.
-Shot feel: documentary lifestyle photography, candid but styled. Warm, human, authentic.
-No text. Square 1:1.
+PRODUCT MATERIAL ANALYSIS:
+Before writing prompts, identify the product's key visual material and how light interacts with it:
+- Translucent/frosted plastic (PP, PE) → describe refraction, internal warm glow, semi-transparent depth
+- Matte plastic → no reflections, slight surface texture, absorbs light evenly
+- Glass/crystal → caustic light projections, sharp reflections, transparency
+- Metal/chrome → specular highlights, mirror-like zones, need controlled studio light to avoid hotspots
+- Fabric/textile → texture under raking light, soft shadows, natural drape
+- Paper/cardboard → subtle surface grain, matte absorption, clean edges
+- Powder/granular → volumetric light scattering, soft diffusion, dust particles in beam
+- Rubber/silicone → slight sheen, matte but with subtle specular points
 
-IMAGE 3 — SPECS INFOGRAPHIC (callouts techniques, style adapté à l'univers produit):
-BACKGROUND REPLACEMENT + TEXT OVERLAY ONLY. This is NOT image generation — it is photo editing.
-The product from the input photo is FROZEN. Do not touch it. Do not recreate it. Copy it pixel-for-pixel onto the new background.
-Only these two operations are allowed: (1) replace the background, (2) add callout text and arrows around the product.
-The product itself — its shape, colors, packaging, labels — is untouchable.
-Background: clean flat beige (${bg}). Replace current background completely.
-Product: keep large and dominant (60-70% of image), sharp, realistic lighting.
-Add 6-8 callout lines with clean arrows pointing to the product parts. Callouts contain REAL specs from the product data in bold French text.
-CREATIVE DIRECTION based on product universe:
-- Action/pyro products: bold black typography, military/technical aesthetic, arrows like a weapons spec sheet
-- Eco/sustainable products: soft rounded callout bubbles, organic shapes, nature-inspired color accents
-- Party/celebration products: playful rounded callouts, colorful dots, festive energy
-- Premium/luxury products: thin elegant lines, serif labels, champagne gold accents
-Typography: high contrast, mobile-readable, minimum 20px. No clutter. Square 1:1.
+Now generate the 7 prompts FULLY ADAPTED to this specific product universe and material:
 
-IMAGE 4 — BENEFITS INFOGRAPHIC (icônes, style adapté à l'univers produit):
-CRITICAL PRESERVATION: Use the provided image as the base product. PHOTO EDIT — keep product EXACTLY identical.
-Background: clean flat beige (${bg}).
-Extract 4 REAL benefits from product data. Create benefit icons that match the product's visual universe.
-CREATIVE DIRECTION:
-- Action/pyro: bold circular badges with dark fill and white text, rugged feel
-- Eco products: leaf-shaped or organic badges, green tones, recycling aesthetic
-- Party products: colorful rounded badges, playful icons, festive colors
-- Premium: minimal rectangular badges, gold border, elegant icons
-Product placement: adapt to composition — not always center-left. Could be bottom-center with badges above, or corner with large badges filling most of frame.
-Icons: proper pictogram style matching product universe. No generic stock icons. French labels, bold, readable.
-Square 1:1, ultra sharp.
+IMAGE 1 — STUDIO FOND BLANC PUNCHY (Amazon main image):
+PHOTO EDITING TASK — BACKGROUND REPLACEMENT ONLY. NOT IMAGE GENERATION.
+FROZEN: Every pixel of the product is untouchable — same shape, same material surface, same packaging text, same proportions.
+Replace ONLY the background with pure white #FFFFFF.
+LIGHTING: Professional studio key light upper-left 45°, large softbox 120cm, 5500K daylight. Subtle fill from right -2 stops. Thin rimlight to separate product edge from white.
+SHADOW: Real contact shadow beneath product — soft, radial, 10-15px spread. Not a drop shadow.
+PLACEMENT: Product centered, filling 85% of frame. Multiple items: arrange front-to-back with slight stagger.
+MATERIAL RENDERING: [YOU MUST describe how to render the product's specific material — e.g. for translucent plastic: preserve semi-transparent refraction; for metal: control specular highlights; for fabric: show natural texture under soft directional light]
+No text, no props. Amazon-compliant. Square 1:1, 4K.
 
-IMAGE 5 — OCCASIONS INFOGRAPHIC (contextes d'usage, style adapté à l'univers):
-CRITICAL PRESERVATION: Use the provided image as the base product. PHOTO EDIT — keep product EXACTLY identical.
-Background: adapt background color and texture to product universe — can deviate from beige if it serves the product better.
-Extract 4-5 REAL occasions from product data. Style the occasion pills/badges to match the product's world.
-CREATIVE DIRECTION:
-- Action/pyro: bold rectangular badges, energetic typography, dark or vibrant background
-- Eco: soft rounded pills, natural tones, minimalist layout
-- Party: colorful mix of badge shapes, festive confetti, warm playful energy
-- Wedding/EVJF: floral accents, soft pastel pills, elegant layout
-Product placement: creative — could be off-center, partially cropped at bottom, or surrounded by floating badges.
-Bottom tagline: short French sentence matching the product's tone and universe.
-Square 1:1.
+IMAGE 2 — LIFESTYLE PREMIUM 4K (hero shot Amazon Best Seller):
+PHOTO EDITING TASK. Product PIXEL-PERFECT IDENTICAL — same material, same form, same packaging. STAGED, never recreated.
+UNIVERSE-ADAPTED SCENE: Build a lifestyle background and surface that feels NATIVE to this product's world. Infer the ideal scene from the product category:
+- PYRO: dark urban backdrop, colored smoke bokeh, gritty concrete surface, moody blue/orange color grade
+- ECO/PARTY: warm outdoor celebration, string lights bokeh, wooden table surface, golden hour glow
+- WEDDING: garden party, soft floral bokeh, linen surface, champagne and blush tones
+- SPORT: outdoor terrain, dynamic light, natural setting relevant to the sport
+- FOOD/DRINK: convivial table scene, warm kitchen or restaurant light, natural ingredients as props
+- HOME/DECO: styled interior corner, natural light from window, coherent home aesthetic
+- BABY: pastel nursery or garden setting, soft diffuse light, cozy materials
+- BEAUTY: marble or light linen flat surface, minimal elegant staging, clean window light
+COMPOSITION: Product sharp and dominant, slightly off-center. Packaging behind and left if present, gently blurred. Subtle thematic props or decorative elements at base (confetti, petals, smoke, leaves — match the universe).
+LIGHTING: Soft natural light from left, 5600K diffused. Rimlight upper-right for product edge separation. Natural material reflections. Zero hard shadows.
+CAMERA: 85mm, f/2.8, ISO 400. Kodak Portra 400 for warm universes / Fuji 400H for cool/elegant universes. Film grain 15%.
+FORBIDDEN: No product modification. No white/neutral background. No text. No AI glow or CGI feel.
+Square 1:1, 4K.
 
-IMAGE 6 — AMBIANCE CINÉMATIQUE (scène d'action, style photo réelle):
-Use the provided image as the base product. Keep it EXACTLY identical — same shape, same colors, same labels.
-Create the most visually striking, cinematic scene possible for this specific product.
-The image must look like a real photo taken by a professional photographer — NOT AI generated.
-Camera specs: 35mm or 50mm lens, f/2.0–f/4, natural light or practical lights, slight film grain.
-Lighting: dramatic natural light — golden hour, magic hour, blue hour, misty forest light, or harsh midday sun depending on product universe.
-SCENE CHOICE — pick the most impactful for this product:
-- Fumigène/pyro: person in motion holding product, massive colored smoke trail, urban or outdoor setting, athletic energy — OR: forest clearing, product on ground, smoke rising through rays of light, cinematic and raw
-- Hélium/ballon: joyful outdoor celebration, hundreds of balloons, warm afternoon light, product bottle prominently visible, genuine human emotion
-- Gobelet eco: outdoor festival table scene, golden hour, filled cups on rustic table, friends in background, warm editorial feel
-- Mariage/EVJF: outdoor garden celebration, soft directional light, bride/bridal party, product featured naturally
-Product is sharp and clearly recognizable. Scene background is real and contextual, not generic.
-Film aesthetic: Kodak Portra 400 tones, natural shadows, authentic textures. No plastic, no CGI feel.
-No text. Square 1:1.
+IMAGE 3 — SPECS INFOGRAPHIC 4K (callouts techniques):
+PHOTO EDITING TASK. Product FROZEN. TWO OPERATIONS ONLY: (1) replace background, (2) add callout annotations.
+BACKGROUND: Clean flat ${bg}. Subtle vignette at edges. Style adapts to universe — warm beige for eco/party, dark charcoal for pyro/action, light grey-white for beauty/premium.
+PRODUCT: Large and dominant, 65% of frame height, razor sharp.
+CALLOUT STYLE adapts to universe:
+- Eco/party/wedding: clean minimal thin lines, rounded pill tags, geometric sans-serif bold, soft accent color derived from product palette
+- Pyro/action/sport: sharp angular lines, military-tech aesthetic, dark high-contrast rectangular tags
+- Beauty/premium: thin elegant lines, light serif or refined sans, champagne or grey accent
+- Baby/home: rounded bubble callouts, friendly weight, soft contrasting accent
+CALLOUTS: 6-8 lines pointing to real product parts. Extract ACTUAL specs from product data — exact numbers, materials, certifications, dimensions. NEVER use ecocup-specific examples for non-ecocup products. Build callouts from the specs field in the JSON output.
+Each callout: bold label 22px min, value below in regular weight, thin clean arrow line.
+Square 1:1, 4K, ultra sharp.
 
-IMAGE 7 — LIFESTYLE INTIME (seconde scène, mood différent, même réalisme):
-Use the provided image as the base product. Keep it EXACTLY identical.
-Create a completely DIFFERENT scene from image 6 — different angle, different time of day, different emotional register.
-If image 6 was wide and dramatic → image 7 is close and intimate.
-If image 6 was outdoors action → image 7 is social/group moment or quiet elegant scene.
-Camera: 85mm, f/1.8–f/2.8, soft side lighting or window light. Shallow depth of field.
-The product is held naturally by human hands or placed in an authentic setting.
-Shot feel: editorial lifestyle photography, like a high-end magazine spread. Human, warm, credible.
-Film tones: Fuji 400H or natural daylight color grading. Real shadows, real textures.
-No text. Square 1:1.
+IMAGE 4 — BENEFITS INFOGRAPHIC 4K (badges bénéfices):
+PHOTO EDITING TASK. Product FROZEN. Place on background.
+BACKGROUND: ${bg}, consistent with image 3.
+LAYOUT: Product left-center or bottom-center. 4 benefit badges arranged around it — 2 left + 2 right, OR 2 top + 2 bottom, balanced.
+BADGE SHAPE AND STYLE adapts to universe:
+- Eco/sustainable: circular badges, white fill, 2px border in natural accent (sage green, warm amber), leaf/nature-inspired icons
+- Pyro/action: hexagonal badges, dark fill, white text, bold rugged icons
+- Party/celebration: rounded colorful badges, festive accent colors, playful icons
+- Wedding: soft oval badges, champagne or blush border, elegant thin icons
+- Beauty/premium: minimal rectangular badges, gold or platinum border, refined icons
+- Baby: soft pill-shaped badges, pastel fills, gentle cheerful icons
+- Sport: bold rounded rectangles, energetic color, performance icons
+BENEFITS: Extract REAL benefits from product data only. NEVER invent. Use the benefits from the JSON output field.
+ICONS: crisp pictogram style, 40x40px, coherent with badge style. No generic clipart.
+Square 1:1, 4K.
+
+IMAGE 5 — OCCASIONS INFOGRAPHIC 4K (contextes d'usage):
+PHOTO EDITING TASK. Product FROZEN. Place on adapted background.
+BACKGROUND: Choose energetic background adapted to product universe — NOT plain beige. Options by universe:
+- Party/eco/event: warm champagne-to-coral gradient, OR very subtle desaturated event photo texture at 15% opacity
+- Pyro: dark near-black gradient with subtle colored smoke texture at 10% opacity
+- Wedding: very soft blurred floral texture at 15% opacity, pastel tones
+- Sport: subtle outdoor/terrain texture at 10% opacity, natural light gradient
+- Beauty: clean light gradient, linen or marble texture at 10% opacity
+PRODUCT: Off-center (right third or bottom center), partially cropped at bottom for dynamism, filling 45-50% of image.
+OCCASION PILLS: 5-6 floating pills arranged around product. Mix of rounded rectangles and circles for dynamism.
+PILL CONTENT: Real occasions from product data in French, short (1-2 words max per pill). Universe-appropriate color palette — cohesive, premium, not garish.
+TAGLINE: Bottom center, 1 short punchy French sentence matching product energy. Clean sans-serif 18px.
+Subtle thematic background elements: confetti for party, petals for wedding, sparks for pyro, leaves for eco — very subtle, not overwhelming.
+Square 1:1, 4K.
+
+IMAGE 6 — AMBIANCE CINÉMATIQUE 4K (wide shot, photo réaliste):
+PHOTO EDITING TASK. Product PIXEL-PERFECT IDENTICAL. It is PLACED in a scene, never recreated.
+MISSION: Most visually striking real-looking photo possible for this product. Must look like professional 35mm film photography — zero AI aesthetic, zero CGI.
+SCENE: Choose the most impactful cinematic context for THIS SPECIFIC product universe. Build a fully immersive scene with the product as hero. Examples by universe (adapt freely — do NOT copy these for other products):
+- Eco/event cup: golden hour outdoor festival table, cups filled with amber/golden drinks, warm raking light through translucent cups, blurred crowd and string lights bokeh
+- Pyro/fumigène: athlete in full motion, massive colored smoke cloud billowing, urban or outdoor terrain, raw energy
+- Party/balloon: joyful outdoor celebration, hundreds of colorful balloons, genuine emotion, warm afternoon light
+- Wedding: outdoor ceremony or garden reception, soft directional light, elegant real-life moment
+- Sport: action shot in natural setting relevant to the sport, dramatic natural light
+- Baby: warm nursery scene or garden moment, soft diffuse light, gentle and authentic
+- Beauty: flat lay or upright on styled surface, clean editorial light, minimal premium staging
+LIGHTING: Most dramatic natural light appropriate to the universe — golden hour, magic hour, window light, overcast for clean editorial. Specify exact color temperature and angle.
+FILM: Kodak Portra 400 (warm universes) or Fuji 400H (cool/editorial). 35mm or 50mm lens, f/2.0–f/3.5, grain 20%.
+No text. Square 1:1, ultra cinematic, 4K.
+
+IMAGE 7 — LIFESTYLE INTIME 4K (close shot, mood opposé à image 6):
+PHOTO EDITING TASK. Product PIXEL-PERFECT IDENTICAL.
+RULE: COMPLETELY DIFFERENT from image 6. Opposite scale, opposite light mood, opposite emotional register.
+If image 6 = wide + dramatic + outdoor → image 7 = close + intimate + indoor or shade.
+If image 6 = action + motion + energy → image 7 = still + social + human moment.
+SCENE: Invent the most human, authentic, close-up moment for this product. Examples by universe (adapt — do NOT copy):
+- Eco/event cup: hands clinking cups in a toast, tight crop, bokeh social scene behind, Fuji 400H cool tones
+- Pyro: product held close in hands, dramatic light, smoke curling upward in frame
+- Party/deco: product being placed by hands on a styled table, intimate staging moment
+- Wedding: product held or featured in a quiet personal moment, soft light, emotional
+- Sport: product in use close-up, hands or body, authentic effort or recovery moment
+- Baby: parent and child interaction with product, incredibly soft warm light
+- Beauty: hand holding or applying product, clean elegant light, skin texture visible
+CAMERA: 85mm, f/1.8–f/2.2, ISO 400. Shallow DOF — product tack sharp, everything else melting into bokeh.
+FILM: Fuji 400H preferred (cooler, fresher, more intimate feel). Grain 15%.
+No text. Square 1:1, 4K, editorial magazine feel.
 
 Return ONLY a valid JSON object, no markdown, no code blocks:
 {
