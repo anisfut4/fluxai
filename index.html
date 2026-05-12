@@ -187,6 +187,9 @@ hr.div{border:none;border-top:1px solid var(--b1);margin:12px 0}
   <div class="sico" id="ico-images" onclick="setPanel('images')" title="Images IA">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><circle cx="5.5" cy="7" r="1.5"/><path d="M1.5 11l3.5-3 3 3 2-2 3.5 3.5"/></svg>
   </div>
+  <div class="sico" id="ico-prompt" onclick="setPanel('prompt')" title="Prompt Builder">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h5"/><path d="M12 9l2 2-2 2M14 11h-4"/></svg>
+  </div>
   <div class="sico-sep"></div>
   <div class="sico" id="ico-settings" onclick="setPanel('settings')" title="Paramètres">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M3.6 12.4l1.1-1.1M11.3 4.7l1.1-1.1"/></svg>
@@ -706,6 +709,139 @@ hr.div{border:none;border-top:1px solid var(--b1);margin:12px 0}
 
   </div>
 </div>
+<!-- ===== PROMPT BUILDER ===== -->
+<div class="view" id="panel-prompt">
+  <div class="panel-grid p2" style="height:100%">
+
+    <!-- LEFT: Config -->
+    <div class="panel" style="display:flex;flex-direction:column;gap:0">
+      <div class="ptitle">⚡ Prompt Builder</div>
+
+      <div class="card">
+        <div class="ch">Type de prompt</div>
+        <div class="cs">Choisir ce que tu veux générer</div>
+        <div class="fg">
+          <label class="fl">Catégorie</label>
+          <select class="fs" id="pb-category" onchange="pbUpdateSlots()">
+            <option value="image">🖼 Images produit (7 slots Amazon)</option>
+            <option value="listing">📝 Listing Amazon complet</option>
+            <option value="title">✏️ Titre seul</option>
+            <option value="bullets">• Bullet points seuls</option>
+            <option value="desc">📄 Description seule</option>
+            <option value="lifestyle">🌅 Prompt lifestyle personnalisé</option>
+          </select>
+        </div>
+        <div class="fg" id="pb-slot-wrap">
+          <label class="fl">Slot image</label>
+          <select class="fs" id="pb-slot">
+            <option value="all">Tous les slots (1→7)</option>
+            <option value="1">1 — Fond blanc studio</option>
+            <option value="2">2 — Lifestyle premium</option>
+            <option value="3">3 — Specs infographie</option>
+            <option value="4">4 — Bénéfices infographie</option>
+            <option value="5">5 — Occasions d'usage</option>
+            <option value="6">6 — Ambiance cinématique</option>
+            <option value="7">7 — Lifestyle intime</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch">Produit</div>
+        <div class="cs">Coller le nom + description ou bullets</div>
+        <div class="fg">
+          <label class="fl">Nom du produit</label>
+          <input class="fi" id="pb-name" placeholder="ex: SPARKLERS CLUB Lot 100 Gobelets 25cl...">
+        </div>
+        <div class="fg">
+          <label class="fl">Description / Bullets</label>
+          <textarea class="ft" id="pb-desc" rows="6" placeholder="Colle ici la description complète ou les bullet points Amazon..."></textarea>
+        </div>
+        <div class="fg">
+          <label class="fl">Univers produit (optionnel — détecté auto)</label>
+          <select class="fs" id="pb-universe">
+            <option value="auto">🤖 Détection automatique</option>
+            <option value="eco">♻️ Éco / Réutilisable</option>
+            <option value="party">🎉 Fête / Anniversaire</option>
+            <option value="wedding">💍 Mariage / EVJF</option>
+            <option value="pyro">💥 Pyrotechnie / Fumigène</option>
+            <option value="sport">🏃 Sport / Outdoor</option>
+            <option value="food">🍽 Food / Boisson</option>
+            <option value="home">🏠 Maison / Déco</option>
+            <option value="baby">👶 Bébé / Enfant</option>
+            <option value="beauty">✨ Beauté / Bien-être</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Langue de sortie du prompt</label>
+          <select class="fs" id="pb-lang">
+            <option value="en">English (recommandé pour IA image)</option>
+            <option value="fr">Français</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch">Style & Qualité</div>
+        <div class="fg">
+          <label class="fl">Rendu cible</label>
+          <select class="fs" id="pb-quality">
+            <option value="4k">4K Photorealistic — film stock</option>
+            <option value="studio">Studio clean — Amazon compliant</option>
+            <option value="editorial">Editorial magazine — Vogue/Monocle</option>
+            <option value="cinematic">Cinématique — 35mm drama</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Film stock</label>
+          <select class="fs" id="pb-film">
+            <option value="auto">Auto selon univers</option>
+            <option value="portra">Kodak Portra 400 — chaud</option>
+            <option value="fuji">Fuji 400H — frais / social</option>
+            <option value="ektar">Kodak Ektar 100 — saturé / clean</option>
+            <option value="ilford">Ilford HP5 — N&B dramatique</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-p" style="width:100%;margin-top:4px;padding:11px;font-size:14px" onclick="pbGenerate()">
+        ⚡ Générer le prompt
+      </button>
+    </div>
+
+    <!-- RIGHT: Output -->
+    <div class="panel" style="display:flex;flex-direction:column">
+      <div class="ptitle">Prompt généré</div>
+
+      <div id="pb-empty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--mu)">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".3"><path d="M6 10h28M6 20h20M6 30h14"/><path d="M30 23l5 5-5 5M35 28h-10"/></svg>
+        <div style="font-size:12px;text-align:center">Configure ton produit à gauche<br>et clique sur Générer</div>
+      </div>
+
+      <div id="pb-loading" style="display:none;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--mu)">
+        <div class="spin" style="width:22px;height:22px;border:2px solid var(--b2);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite"></div>
+        <div style="font-size:12px" id="pb-loading-txt">Génération en cours...</div>
+      </div>
+
+      <div id="pb-result" style="display:none;flex-direction:column;gap:10px;flex:1;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <div style="font-size:11px;color:var(--mu)" id="pb-result-label">Prompt — Image 2 Lifestyle</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-g btn-sm" onclick="pbCopyAll()">📋 Tout copier</button>
+            <button class="btn btn-g btn-sm" onclick="pbReset()">↺ Reset</button>
+          </div>
+        </div>
+
+        <div id="pb-slots-nav" style="display:none;flex-shrink:0">
+          <div class="tabs" id="pb-slots-tabs" style="margin-bottom:8px"></div>
+        </div>
+
+        <div id="pb-output-wrap" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
 </main>
 </div>
 
@@ -762,11 +898,270 @@ function setMode(m) {
   });
 }
 function setPanel(p) {
-  ['editor','history','settings','images'].forEach(x=>{
+  ['editor','history','settings','images','prompt'].forEach(x=>{
     document.getElementById('panel-'+x).classList.toggle('active',x===p);
     const ico=document.getElementById('ico-'+x);
     if(ico) ico.classList.toggle('active',x===p);
   });
+}
+
+// ============ PROMPT BUILDER ============
+function pbUpdateSlots() {
+  const cat = document.getElementById('pb-category').value;
+  document.getElementById('pb-slot-wrap').style.display = cat === 'image' ? '' : 'none';
+}
+
+function pbReset() {
+  document.getElementById('pb-empty').style.display='flex';
+  document.getElementById('pb-result').style.display='none';
+  document.getElementById('pb-loading').style.display='none';
+}
+
+function pbCopyAll() {
+  const blocks = document.querySelectorAll('.pb-block-text');
+  const all = Array.from(blocks).map(b=>b.innerText).join('\n\n---\n\n');
+  navigator.clipboard.writeText(all).then(()=>{
+    const btn = document.querySelector('#pb-result .btn-g');
+    const orig = btn.textContent;
+    btn.textContent = '✅ Copié !';
+    setTimeout(()=>btn.textContent=orig, 1800);
+  });
+}
+
+function pbCopyBlock(btn, text) {
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig = btn.textContent;
+    btn.textContent = '✅';
+    btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('ok');}, 1800);
+  });
+}
+
+const PB_IMAGE_LABELS = {
+  1: '1 — Fond blanc studio',
+  2: '2 — Lifestyle premium',
+  3: '3 — Specs infographie',
+  4: '4 — Bénéfices infographie',
+  5: '5 — Occasions d\'usage',
+  6: '6 — Ambiance cinématique',
+  7: '7 — Lifestyle intime',
+};
+
+const PB_UNIVERSE_HINTS = {
+  eco: 'eco/sustainable product — Scandinavian minimalism, natural warm tones, honest photography',
+  party: 'party/celebration product — colorful, joyful, festive bokeh, golden warm light, confetti',
+  wedding: 'wedding/EVJF product — soft romantic light, floral accents, pastel palette, elegant',
+  pyro: 'pyrotechnic/smoke product — urban grit, dark drama, colored smoke, athletic raw energy',
+  sport: 'sport/outdoor product — natural landscapes, dynamic light, authentic action',
+  food: 'food/drink product — convivial table scene, appetizing warm light, natural ingredients',
+  home: 'home/decor product — interior lifestyle scene, clean aesthetic, natural window light',
+  baby: 'baby/kids product — soft pastel tones, gentle light, cheerful and warm',
+  beauty: 'beauty/wellness product — clean minimal flat lay, marble or linen surface, elegant',
+  auto: 'detect the visual universe from the product name and description',
+};
+
+const PB_FILM_HINTS = {
+  auto: 'Choose film stock automatically based on universe: Kodak Portra 400 for warm/festive scenes, Fuji 400H for cool/social/elegant scenes',
+  portra: 'Kodak Portra 400 — warm color grade, lifted shadows, creamy highlights, natural skin-like warmth',
+  fuji: 'Fuji 400H — cooler tones, slightly desaturated, clean shadows, fresh and social feel',
+  ektar: 'Kodak Ektar 100 — high saturation, fine grain, vivid but natural, clean color rendition',
+  ilford: 'Ilford HP5 — black and white, dramatic contrast, timeless editorial feel',
+};
+
+const PB_QUALITY_HINTS = {
+  '4k': '4K photorealistic, shot on 35mm film, zero AI aesthetic, zero CGI feel, authentic textures, natural film grain 15-20%',
+  studio: 'Professional studio photography, Amazon-compliant, clean and precise, controlled lighting, sharp product rendering',
+  editorial: 'Editorial magazine quality — Vogue or Monocle aesthetic, sophisticated, minimal, high-fashion sensibility',
+  cinematic: 'Cinematic 35mm drama — anamorphic lens flares, deep shadows, volumetric light, movie poster quality',
+};
+
+async function pbGenerate() {
+  const name = document.getElementById('pb-name').value.trim();
+  const desc = document.getElementById('pb-desc').value.trim();
+  const cat = document.getElementById('pb-category').value;
+  const slot = document.getElementById('pb-slot').value;
+  const universe = document.getElementById('pb-universe').value;
+  const lang = document.getElementById('pb-lang').value;
+  const quality = document.getElementById('pb-quality').value;
+  const film = document.getElementById('pb-film').value;
+
+  if (!name && !desc) { alert('Renseigne au moins le nom ou la description du produit.'); return; }
+  if (!S.apiKey) { alert('Configure ta clé API Claude dans les Paramètres.'); return; }
+
+  document.getElementById('pb-empty').style.display='none';
+  document.getElementById('pb-result').style.display='none';
+  document.getElementById('pb-loading').style.display='flex';
+  document.getElementById('pb-loading-txt').textContent = 'Génération via Claude Sonnet...';
+
+  const universeHint = PB_UNIVERSE_HINTS[universe] || PB_UNIVERSE_HINTS.auto;
+  const filmHint = PB_FILM_HINTS[film] || PB_FILM_HINTS.auto;
+  const qualityHint = PB_QUALITY_HINTS[quality] || PB_QUALITY_HINTS['4k'];
+  const langInstruction = lang === 'fr'
+    ? 'Write the prompts in FRENCH.'
+    : 'Write the prompts in ENGLISH. This is critical for AI image generation tools (Midjourney, DALL-E, Stable Diffusion, Gemini Image).';
+
+  let slotsToGenerate = [];
+  if (cat === 'image') {
+    slotsToGenerate = slot === 'all' ? [1,2,3,4,5,6,7] : [parseInt(slot)];
+  }
+
+  const systemPrompt = `You are an expert Amazon product photographer and prompt engineer. You write hyper-specific, technical prompts for AI image generation tools (Midjourney, DALL-E, GPT-Image, Gemini Image, Stable Diffusion).
+
+QUALITY MANDATE: ${qualityHint}
+FILM STOCK: ${filmHint}
+PRODUCT UNIVERSE: ${universeHint}
+${langInstruction}
+
+ABSOLUTE RULES:
+- Every prompt starts with: "PHOTO EDITING TASK — NOT IMAGE GENERATION. The product MUST remain PIXEL-PERFECT IDENTICAL to the input image."
+- Specify exact camera: lens mm, aperture f/, ISO, film stock
+- Specify exact lighting: source, angle in degrees, color temperature in K, softbox size if applicable
+- Kill AI aesthetics explicitly: no plastic-looking surfaces, no unnatural glow, no CGI feel, no over-saturation
+- Product material: analyze from the product name and describe how light interacts with its specific material
+- Every prompt must be self-contained and ready to copy-paste directly into an AI tool
+- Return ONLY a valid JSON, no markdown, no explanations outside the JSON`;
+
+  let userPrompt = '';
+
+  if (cat === 'image') {
+    const slotDescriptions = {
+      1: 'Studio white background — pure white #FFFFFF, professional studio key light upper-left 45°, rimlight to separate product from white, real contact shadow beneath product, product centered filling 85% of frame, Amazon main image compliant, no text no props',
+      2: 'Lifestyle premium hero shot — product sharp dominant in foreground, universe-native background in soft bokeh, universe-appropriate decorative elements at base, soft natural light from left 5600K, 85mm f/2.8, product rests on real surface with subtle reflection, film grain 15%',
+      3: 'Specs infographic — background replaced with clean flat color adapted to universe, product large and sharp at 65% height, 6-8 callout lines with REAL specs extracted from product data (exact numbers dimensions materials certifications), thin arrows, bold labels 22px min, no decorative elements',
+      4: 'Benefits infographic — 4 benefit badges around the product, badge shape and style adapted to universe, REAL benefits from product data only, crisp pictogram icons coherent with universe style, French labels bold 18px',
+      5: 'Usage occasions infographic — product off-center, 5-6 floating occasion pills in French (1-2 words max each), energetic background gradient adapted to universe, short tagline at bottom matching product energy, subtle universe-thematic background elements',
+      6: 'Cinematic outdoor scene — most visually striking real outdoor scene for this product, looks like professional 35mm film photography zero AI aesthetic, universe-appropriate immersive scene, Kodak Portra 400 golden hour for warm universes, 35mm f/2.0-f/3.5, film grain 20%',
+      7: 'Intimate lifestyle — COMPLETELY DIFFERENT from slot 6, opposite emotional register (if 6=wide outdoor → 7=close intimate indoor), close-up human interaction with product, 85mm f/1.8-f/2.2, Fuji 400H, editorial magazine feel, film grain 15%',
+    };
+
+    const selectedSlotDescriptions = slotsToGenerate.map(n => `SLOT ${n} (${PB_IMAGE_LABELS[n]}): ${slotDescriptions[n]}`).join('\n');
+
+    userPrompt = `Product name: ${name || 'Not specified'}
+Product description: ${desc || 'Not specified'}
+
+Generate ${slotsToGenerate.length === 1 ? 'this image prompt' : 'these ' + slotsToGenerate.length + ' image prompts'} for Amazon product photography:
+
+${selectedSlotDescriptions}
+
+For each prompt:
+1. First detect the product's visual universe and key material from the name/description
+2. Identify how light interacts with this material (translucent, metallic, fabric, etc.)
+3. Write a hyper-specific, technically detailed prompt ready to paste into an AI image tool
+
+Return ONLY this JSON:
+{
+  "universe_detected": "name of detected universe",
+  "material_analysis": "how light interacts with this product's material",
+  "prompts": [
+    ${slotsToGenerate.map(n => `{"slot": ${n}, "label": "${PB_IMAGE_LABELS[n]}", "prompt": "..."}`).join(',\n    ')}
+  ]
+}`;
+  } else {
+    const taskMap = {
+      listing: 'a complete Amazon listing (title, 5 bullet points, description) in French, optimized for Amazon SEO, compliant with Amazon rules (no long dashes, bullets max 200 chars each, brand name first in title)',
+      title: 'an optimized Amazon product title in French (brand first, key attributes, max 200 chars)',
+      bullets: '5 Amazon bullet points in French (no emoji, max 200 chars each, no long dashes)',
+      desc: 'an Amazon product description in French (2-3 paragraphs, persuasive, SEO-optimized)',
+      lifestyle: 'a premium lifestyle image prompt in English for AI image generation (Midjourney/DALL-E/Gemini), hyper-specific with camera specs, lighting, scene, film stock, adapted to the product universe',
+    };
+
+    userPrompt = `Product name: ${name || 'Not specified'}
+Product description/bullets: ${desc || 'Not specified'}
+
+Generate ${taskMap[cat]} for this product.
+
+Return ONLY this JSON:
+{
+  "type": "${cat}",
+  "label": "${cat === 'listing' ? 'Listing Amazon complet' : cat === 'title' ? 'Titre Amazon' : cat === 'bullets' ? 'Bullet Points' : cat === 'desc' ? 'Description' : 'Prompt Lifestyle'}",
+  "content": "the generated content here — use \\n for line breaks between bullets"
+}`;
+  }
+
+  try {
+    const res = await fetch(`${PROXY.anthropic}/v1/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+
+    document.getElementById('pb-loading').style.display='none';
+    document.getElementById('pb-result').style.display='flex';
+
+    const wrap = document.getElementById('pb-output-wrap');
+    const nav = document.getElementById('pb-slots-nav');
+    const tabs = document.getElementById('pb-slots-tabs');
+    wrap.innerHTML = '';
+    tabs.innerHTML = '';
+
+    if (cat === 'image') {
+      document.getElementById('pb-result-label').textContent =
+        `Univers: ${parsed.universe_detected || '—'} · Matière: ${parsed.material_analysis || '—'}`;
+
+      const prompts = parsed.prompts || [];
+
+      if (prompts.length > 1) {
+        nav.style.display = '';
+        prompts.forEach((p, i) => {
+          const tab = document.createElement('div');
+          tab.className = 'tab' + (i === 0 ? ' active' : '');
+          tab.textContent = `${p.slot}`;
+          tab.title = p.label;
+          tab.onclick = () => {
+            document.querySelectorAll('#pb-slots-tabs .tab').forEach(t=>t.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelectorAll('.pb-slot-block').forEach((b,j)=>{
+              b.style.display = j === i ? '' : 'none';
+            });
+          };
+          tabs.appendChild(tab);
+        });
+      } else {
+        nav.style.display = 'none';
+      }
+
+      prompts.forEach((p, i) => {
+        const block = document.createElement('div');
+        block.className = 'rb pb-slot-block';
+        block.style.display = i === 0 ? '' : 'none';
+        block.innerHTML = `
+          <div class="rl">
+            <span>${p.label}</span>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span class="rlen">${(p.prompt||'').length} chars</span>
+              <button class="cbtn" onclick="pbCopyBlock(this, ${JSON.stringify(p.prompt||'')})">Copier</button>
+            </div>
+          </div>
+          <div class="rt pb-block-text" style="white-space:pre-wrap;font-size:12px;line-height:1.7;color:var(--txt)">${(p.prompt||'').replace(/</g,'&lt;')}</div>`;
+        wrap.appendChild(block);
+      });
+    } else {
+      nav.style.display = 'none';
+      document.getElementById('pb-result-label').textContent = parsed.label || cat;
+      const content = parsed.content || '';
+      const block = document.createElement('div');
+      block.className = 'rb';
+      block.innerHTML = `
+        <div class="rl">
+          <span>${parsed.label || cat}</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="rlen">${content.length} chars</span>
+            <button class="cbtn" onclick="pbCopyBlock(this, ${JSON.stringify(content)})">Copier</button>
+          </div>
+        </div>
+        <div class="rt pb-block-text" style="white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--txt)">${content.replace(/</g,'&lt;')}</div>`;
+      wrap.appendChild(block);
+    }
+
+  } catch(e) {
+    document.getElementById('pb-loading').style.display='none';
+    document.getElementById('pb-empty').style.display='flex';
+    alert('Erreur génération prompt: ' + e.message);
+  }
 }
 function setCreateTab(t) {
   ['manual','csv'].forEach(x=>{
