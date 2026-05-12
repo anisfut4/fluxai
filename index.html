@@ -945,6 +945,12 @@ const PROXY = (() => {
   };
 })();
 
+// ============ SLOT CONFIG (global, declared first) ============
+const SLOT_LABELS = ['Fond blanc punchy','Lifestyle fond blanc','Infographie specs','Infographie bénéfices','Usage & occasions','Ambiance produit en action','Ambiance lifestyle scène'];
+const SLOT_SHORT  = ['Blanc','Style','Specs','Bénéf.','Occas.','Cinéma','Intime'];
+const STEP_LABELS = ['Fond blanc studio','Lifestyle premium','Infographie specs','Bénéfices infographie','Occasions d\'usage','Ambiance cinématique','Lifestyle intime'];
+let selectedSlots = new Set([0,1,2,3,4,5,6]);
+
 const S = {
   apiKey: localStorage.getItem('fai')||'',
   catalog: [], catHeaders: [],
@@ -978,8 +984,6 @@ function setPanel(p) {
 }
 
 // ============ SLOT SELECTOR ============
-const SLOT_SHORT = ['Blanc','Style','Specs','Bénéf.','Occas.','Cinéma','Intime'];
-let selectedSlots = new Set([0,1,2,3,4,5,6]);
 
 function slotSelInit() {
   const grid = document.getElementById('slot-sel-grid');
@@ -1024,7 +1028,6 @@ function slotSelUpdateBtn() {
 document.addEventListener('DOMContentLoaded', slotSelInit);
 
 
-const STEP_LABELS = ['Fond blanc studio','Lifestyle premium','Specs infographie','Bénéfices infographie','Occasions d\'usage','Ambiance cinématique','Lifestyle intime'];
 
 function stepperInit() {
   // Reset analyse step
@@ -2460,7 +2463,6 @@ function sl(ms){return new Promise(r=>setTimeout(r,ms));}
 // ============================================================
 
 const IMG = { file:null, dataUrl:null, specs:null, results:[null,null,null,null,null], generating:false };
-const SLOT_LABELS = ['Fond blanc punchy','Lifestyle fond blanc','Infographie specs','Infographie bénéfices','Usage & occasions','Ambiance produit en action','Ambiance lifestyle scène'];
 
 // --- File handling ---
 function loadImgFile(evt) {
