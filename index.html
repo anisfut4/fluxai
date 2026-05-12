@@ -1005,55 +1005,232 @@ async function pbGenerate() {
     slotsToGenerate = slot === 'all' ? [1,2,3,4,5,6,7] : [parseInt(slot)];
   }
 
-  const systemPrompt = `You are an expert Amazon product photographer and prompt engineer. You write hyper-specific, technical prompts for AI image generation tools (Midjourney, DALL-E, GPT-Image, Gemini Image, Stable Diffusion).
+  const systemPrompt = `You are a world-class Amazon product photographer, creative director, and AI prompt engineer with 15 years of experience shooting for premium e-commerce brands. You write prompts that other prompt engineers consider the gold standard — exhaustive, technically precise, visually complete, with zero ambiguity left for the AI model to guess.
 
-QUALITY MANDATE: ${qualityHint}
-FILM STOCK: ${filmHint}
-PRODUCT UNIVERSE: ${universeHint}
+OVERARCHING QUALITY MANDATE:
+${qualityHint}
+Every prompt you write must produce a result indistinguishable from a real photo taken by a professional photographer. The viewer must never suspect AI was involved.
+
+FILM & COLOR SCIENCE:
+${filmHint}
+Apply these color science principles to every lifestyle and cinematic prompt. Describe color temperature, tonal curve, shadow lift, highlight roll-off, and grain structure explicitly.
+
+PRODUCT UNIVERSE:
+${universeHint}
+Every visual decision — surface, light source, background elements, color palette, props, human interaction — must feel native to this universe. Nothing generic. Nothing stock-photo.
+
+LANGUAGE:
 ${langInstruction}
 
-ABSOLUTE RULES:
-- Every prompt starts with: "PHOTO EDITING TASK — NOT IMAGE GENERATION. The product MUST remain PIXEL-PERFECT IDENTICAL to the input image."
-- Specify exact camera: lens mm, aperture f/, ISO, film stock
-- Specify exact lighting: source, angle in degrees, color temperature in K, softbox size if applicable
-- Kill AI aesthetics explicitly: no plastic-looking surfaces, no unnatural glow, no CGI feel, no over-saturation
-- Product material: analyze from the product name and describe how light interacts with its specific material
-- Every prompt must be self-contained and ready to copy-paste directly into an AI tool
-- Return ONLY a valid JSON, no markdown, no explanations outside the JSON`;
+PRODUCT PRESERVATION RULES (non-negotiable, repeat in every prompt):
+- Open every prompt with the exact phrase: "PHOTO EDITING TASK — NOT IMAGE GENERATION."
+- The product in the input image is PIXEL-PERFECT FROZEN. Not one pixel of the product may be altered — same geometry, same material surface, same colors, same text/labels, same proportions, same imperfections.
+- The product is PLACED or STAGED in a scene. It is never recreated, redrawn, or reimagined.
+- If the product has a specific material (translucent plastic, frosted PP, chrome metal, matte fabric, glossy glass, powder, etc.) — describe explicitly how light physically interacts with that material in this scene.
+
+TECHNICAL PHOTOGRAPHY SPECIFICATIONS (mandatory in every prompt):
+- Camera body: specify (Sony A7R IV, Canon EOS R5, Nikon Z9, Hasselblad X2D — choose what fits the mood)
+- Lens: specify focal length (35mm for environmental, 50mm for natural, 85mm for portrait compression, 100mm macro for detail)
+- Aperture: exact value (f/1.4 for extreme bokeh, f/1.8-f/2.8 for lifestyle, f/5.6-f/8 for studio/infographic)
+- ISO: exact value (ISO 100 for studio clean, ISO 400-800 for lifestyle natural, ISO 1600 for moody cinematic)
+- Shutter speed: when relevant (1/250s action, 1/60s lifestyle, 1/30s low-light mood)
+- Film emulation: exact stock name and its characteristics
+
+LIGHTING SPECIFICATIONS (mandatory in every prompt):
+- Main light source: type (softbox, window, sun, reflector, practical lamp), exact position (upper-left 45°, side at 90°, backlight at 180°), distance, size (120cm softbox vs 60cm)
+- Color temperature: exact Kelvin (2700K candle/warm, 3200K tungsten/golden hour, 5600K daylight, 6500K overcast/cool)
+- Fill light: position, ratio vs main (-1 stop, -2 stops, or natural bounce)
+- Rim/separation light: yes/no, intensity, direction
+- Shadow description: soft/hard, direction, length, density
+- Highlight behavior on the product's specific material
+
+FORBIDDEN IN EVERY PROMPT (repeat explicitly):
+- No AI-generated aesthetic: no plastic-looking surfaces, no unnatural edge glow, no perfect-but-fake textures, no overly smooth gradients
+- No CGI render feel: no caustic light patterns that look 3D-rendered
+- No over-saturation, no HDR look, no over-sharpening
+- No floating objects or unnatural levitation
+- No text added to the image (for lifestyle/cinematic slots)
+- No white or neutral background (for lifestyle/cinematic slots)
+
+PROMPT LENGTH REQUIREMENT:
+Each prompt must be minimum 300 words. A short prompt produces a mediocre result. More precision = better output. Write everything the AI needs to know: what is in the frame, what is not, how every light source behaves, what the surface feels like, what the background contains, what emotional register the image should evoke.
+
+Return ONLY a valid JSON object. No markdown. No explanations. No code blocks. Raw JSON only.`;
 
   let userPrompt = '';
 
   if (cat === 'image') {
     const slotDescriptions = {
-      1: 'Studio white background — pure white #FFFFFF, professional studio key light upper-left 45°, rimlight to separate product from white, real contact shadow beneath product, product centered filling 85% of frame, Amazon main image compliant, no text no props',
-      2: 'Lifestyle premium hero shot — product sharp dominant in foreground, universe-native background in soft bokeh, universe-appropriate decorative elements at base, soft natural light from left 5600K, 85mm f/2.8, product rests on real surface with subtle reflection, film grain 15%',
-      3: 'Specs infographic — background replaced with clean flat color adapted to universe, product large and sharp at 65% height, 6-8 callout lines with REAL specs extracted from product data (exact numbers dimensions materials certifications), thin arrows, bold labels 22px min, no decorative elements',
-      4: 'Benefits infographic — 4 benefit badges around the product, badge shape and style adapted to universe, REAL benefits from product data only, crisp pictogram icons coherent with universe style, French labels bold 18px',
-      5: 'Usage occasions infographic — product off-center, 5-6 floating occasion pills in French (1-2 words max each), energetic background gradient adapted to universe, short tagline at bottom matching product energy, subtle universe-thematic background elements',
-      6: 'Cinematic outdoor scene — most visually striking real outdoor scene for this product, looks like professional 35mm film photography zero AI aesthetic, universe-appropriate immersive scene, Kodak Portra 400 golden hour for warm universes, 35mm f/2.0-f/3.5, film grain 20%',
-      7: 'Intimate lifestyle — COMPLETELY DIFFERENT from slot 6, opposite emotional register (if 6=wide outdoor → 7=close intimate indoor), close-up human interaction with product, 85mm f/1.8-f/2.2, Fuji 400H, editorial magazine feel, film grain 15%',
+      1: `SLOT 1 — STUDIO WHITE BACKGROUND (Amazon main image, must pass Amazon's image requirements):
+MISSION: The cleanest, most professional studio product shot possible. This is the hero image that determines click-through rate.
+BACKGROUND: Pure white #FFFFFF — not off-white, not light grey. RGB 255,255,255. The entire background area must be uniformly white with no gradients, no shadows on background, no props, no color.
+LIGHTING SETUP: Three-point professional studio lighting.
+  - Key light: large format softbox 120x120cm, positioned upper-left at 45° horizontal angle, 30° vertical angle downward, 5500K daylight balanced, 1.2m from subject. This is the main modeling light.
+  - Fill light: 80x80cm softbox, right side at 0° (perpendicular to subject), -1.5 stops relative to key, 5500K. Opens shadows without flattening.
+  - Rim light: strip softbox 30x120cm, positioned directly behind product at 180°, slightly above product top, -2 stops relative to key. Creates a thin luminous separation edge between product and white background. Essential for preventing the product from "melting" into the white.
+SHADOW: Extremely subtle contact shadow ONLY directly beneath the product on the surface — soft, warm-neutral (not cool grey), radiating 8-12px outward. Not a drop shadow. Not a cast shadow. A real physical contact shadow created by the product's weight pressing against the surface.
+PRODUCT PLACEMENT: Perfectly centered. Product fills 80-85% of the frame height. If it is a set of multiple items (lot), arrange them in a clean triangular or staggered composition — front item sharp and dominant, back items slightly receded but still sharp (f/8 deep focus for studio).
+MATERIAL RENDERING: Analyze the product material from name/description and describe precisely. Example: for frosted translucent polypropylene — the semi-transparent material should show subtle internal light refraction, a soft diffused inner glow where the key light passes through the thin walls, realistic surface micro-texture (not glossy, not fully matte — somewhere between the two). For metal — controlled specular highlights, no blown-out hotspots. For fabric — visible weave texture under raking light. Always specify.
+PROHIBITED: No text. No props. No color accents. No logos added. No background elements. Amazon image guidelines compliant — product and white only.
+CAMERA: Hasselblad X2D 100C, 80mm lens (equivalent to 63mm full frame), f/8, ISO 64, 1/125s. Medium format sensor for maximum sharpness and detail.`,
+
+      2: `SLOT 2 — LIFESTYLE PREMIUM HERO SHOT (Amazon Best Seller visual, the image that communicates premium quality and desired lifestyle):
+MISSION: Make the customer WANT this product. They must see themselves using it in a beautiful moment. This image sells the lifestyle, not just the product.
+PRODUCT PRESERVATION: The product from the input is PIXEL-PERFECT FROZEN. Same material, same form, same labels, same imperfections. It is placed in a scene, never recreated.
+UNIVERSE ANALYSIS: Before building the scene, analyze the product's universe from its name and description. Build every visual element — surface material, background content, decorative props, light quality, color palette — to feel completely native to that universe. Zero generic stock-photo energy.
+COMPOSITION: Rule of thirds. Product positioned at right-of-center vertical third, sharp from edge to edge. If packaging exists, place it behind and to the left at 30-40cm distance, soft focus (appears as warm blurred shape). At the base of the product, scatter 2-3 small universe-appropriate props (examples: for party/event — scattered confetti and a blurred champagne flute; for eco/outdoor — a folded linen napkin and small plant sprig; for pyro — scattered ash or colored powder dust at base; for beauty — a small stone and dried flower petal). Props must NOT compete with the product — they support.
+SURFACE: Product rests on a real physical surface. Choose a surface native to the universe: for party/event — worn oak wooden table with visible grain; for wedding — marble with subtle veining; for sport — natural stone or concrete; for baby — soft light linen fabric; for beauty — honed white marble. Describe the surface texture explicitly. Include a subtle surface reflection of the product beneath it — barely perceptible, like a polished but not mirror surface.
+BACKGROUND: 100% bokeh, f/2.8 depth of field. Background content must be real and universe-appropriate — describe exactly what elements are in the background even though they are blurred: for party — string lights creating hexagonal bokeh circles, warm amber tones, suggestion of crowd silhouettes; for wedding — blurred floral arch, champagne and blush tones; for pyro — urban concrete wall texture with residual color smoke bokeh; for eco/outdoors — blurred green foliage and dappled light; for baby — soft nursery colors with blurred wooden toy shapes. The background should feel like a real environment, not a rendered texture.
+LIGHTING: Large west-facing window light scenario — diffused through sheer white curtain, creating soft directional light from the left side, 5600K daylight color temperature. Key light enters at 45° from upper-left. Shadow side of product has gentle fill from natural bounce off a white surface to the right (not reflector — bounce). Rimlight: upper-right 45° rim — very subtle, creates a luminous edge on the product's right side, separating it from background. No hard shadows anywhere. Shadow under the product is soft and warm-toned.
+MATERIAL INTERACTION WITH LIGHT: Describe precisely how this product's specific material catches and interacts with the window light. For translucent materials — describe the internal glow and refraction. For metal — describe the specular highlights and reflections. For fabric — describe how the texture reveals itself under directional light. For glass — describe transparency, caustics, reflections. Be specific to THIS product.
+CAMERA: Sony A7R IV, 85mm f/2.8, ISO 400, 1/100s. Kodak Portra 400 color science — warm skin-like midtones, lifted shadows, creamy highlight roll-off, slight desaturation in deep shadows, film grain at 15% (fine grain, not digital noise).
+FORBIDDEN: No white or neutral background. No product modification. No text overlay. No artificial glow or AI halo around product. No perfectly-smooth AI-generated surface textures.`,
+
+      3: `SLOT 3 — TECHNICAL SPECIFICATIONS INFOGRAPHIC (callout diagram, engineering aesthetic meets premium design):
+MISSION: Communicate technical trust. The customer buying this product wants to know exact specs. This image builds confidence through precision and professionalism.
+OPERATION TYPE: PHOTO EDIT + GRAPHIC OVERLAY. The product from input is FROZEN — copied pixel-perfect onto a new background. The only additions are: (1) new background, (2) callout lines and text annotations around the product.
+BACKGROUND: Clean flat single color — choose based on product universe:
+  - Eco/event/party: warm off-white #F8F3EC or soft sage green #E8EDE4 — natural, breathable
+  - Pyro/action/sport: deep charcoal #1C1C1E or dark navy #14182B — technical, serious
+  - Wedding/beauty/premium: very light warm grey #F2EFEA or champagne #F5EDD8 — elegant, minimal
+  - Baby/home: soft powder blue #EDF2F7 or warm cream #FDF6EE — friendly, approachable
+  Apply a very subtle vignette at edges (10% darkening, 300px feather) to add depth without visible edge.
+PRODUCT SIZE AND POSITION: Product centered or slightly right-of-center. Fills 60-65% of image height. Must be razor sharp — studio lighting quality preserved or enhanced. All surface details, text on packaging, and material texture fully visible and crisp.
+CALLOUT SYSTEM: 6-8 callout lines total. Each callout consists of: a thin line (1px, color matching universe accent) extending from a specific point on the product outward to white space, terminating in a small circle dot (3px), followed by the label block.
+LABEL BLOCK STRUCTURE: Bold uppercase label in 13-15px geometric sans-serif (e.g. "MATIÈRE") → line break → actual value in 18-22px bold primary text (e.g. "Polypropylène PP") → optional sub-value in 11px regular (e.g. "Sans BPA certifié CE"). Text color: dark #1A1A1A on light backgrounds, white #FFFFFF on dark backgrounds.
+CALLOUT CONTENT — extract ONLY real data from the product description provided. Do not invent. Do not use placeholder text. Examples of callout types to extract: material name and certification, exact dimensions (height, diameter, width in mm), volume/capacity in cl or ml (useful volume AND maximum volume if different), weight if mentioned, compatibility features (dishwasher-safe, microwave-safe, stackable, recyclable), origin/manufacturing location (Made in France, etc.), certifications (CE, BPA-free, food-grade, ISO). If a spec is not in the product data, omit that callout entirely.
+CALLOUT PLACEMENT: Distribute around all four sides of the product — top, bottom, left, right. No two callouts on the same side should overlap. Left-side callouts have text left-aligned. Right-side callouts have text right-aligned. Top/bottom callouts centered.
+STYLE VARIANT (adapt to universe):
+  - Eco/event: rounded pill-shaped endpoint, soft accent color, clean geometric sans-serif
+  - Pyro/technical: angular rectangular endpoint, monospace font, military-spec aesthetic
+  - Beauty/premium: thin hairline arrows, elegant serif or refined sans, champagne gold accent
+  - Baby: rounded bubble endpoints, friendly rounded sans-serif, soft color accents
+NO decorative elements, no icons, no background imagery. Pure technical clarity.
+CAMERA (for the base product render): Hasselblad quality, f/8 equivalent, perfectly sharp, neutral studio light.`,
+
+      4: `SLOT 4 — BENEFITS INFOGRAPHIC (badge-driven benefit communication, emotional + rational):
+MISSION: Communicate the 4 most powerful reasons to buy this product. Each badge must be scannable in under 2 seconds. This image is for mobile shoppers who scroll fast.
+OPERATION TYPE: PHOTO EDIT + GRAPHIC OVERLAY. Product PIXEL-PERFECT FROZEN from input. Placed on new background with benefit badges added around it.
+BACKGROUND: Same color palette as Slot 3 for brand visual consistency. Same universe-appropriate flat color. Same subtle vignette treatment at edges.
+PRODUCT PLACEMENT: Positioned left-of-center or bottom-center (adapt based on product aspect ratio — tall products go center with badges at sides; wide/flat products go bottom with badges above). Product fills 50-60% of image area. Sharp, photorealistic, material correctly lit.
+BADGE DESIGN — build a coherent badge system adapted to the product universe:
+  BADGE SHAPE:
+    - Eco/event/party: perfect circle, 120px diameter equivalent
+    - Pyro/action/sport: hexagon or shield shape, bold and angular
+    - Wedding/beauty/premium: soft oval or rounded rectangle with 20px radius
+    - Baby/home: pill shape with very high border radius, friendly
+  BADGE ANATOMY (inside each badge):
+    - Icon: centered, 40x40px pictogram — crisp, minimal, NOT generic clipart. Describe the specific icon for each benefit (e.g. for dishwasher-safe: side view of plates in dishwasher rack with water drops; for recyclable: classic recycling arrows with a leaf integrated; for BPA-free: molecule with cross-out; for Made in France: hexagon silhouette of France map).
+    - Primary label: 1-3 words maximum, bold, 14-16px, uppercase or title case
+    - Sub-label: 1 short explanatory line, 10-11px, regular weight
+  BADGE COLORS:
+    - Eco: white fill, 2px border in sage green #4A7A5A, icon in sage green
+    - Pyro: dark fill #1C1C1E, white icon and text, red or orange accent border
+    - Wedding: white fill, 1px border in champagne #C9A96E, icon in champagne
+    - Party: white fill, colorful border matching product's dominant color, colored icon
+    - Baby: pastel fill (light mint or powder blue), white or dark text, gentle icon
+  BADGE PLACEMENT: 2 badges on the left side of product (vertically stacked with 20px gap), 2 badges on the right side. OR if product is bottom-centered: 2 above left, 2 above right. All 4 badges at same vertical alignment on their respective sides. Badges connect to the product with a very thin dotted line (optional, universe-dependent — use for technical products, omit for lifestyle).
+BENEFIT CONTENT — extract ONLY from the product description provided. Use the 4 most differentiating, purchase-relevant benefits. Do not duplicate what's in Slot 3 specs. Examples: durability/number of wash cycles, environmental credentials, ease of use features, safety certifications, origin story, versatility/use cases. Write specific French labels.
+CAMERA/RENDER: Same sharp f/8 studio quality for the product. Graphic elements are crisp vector-quality at 4K resolution.`,
+
+      5: `SLOT 5 — USAGE OCCASIONS INFOGRAPHIC (context pills, answers "when/where do I use this?"):
+MISSION: Show the customer all the situations where this product fits into their life. Breadth of use cases = higher perceived value. Pills must feel energetic and inspiring, not like a boring list.
+OPERATION TYPE: PHOTO EDIT + GRAPHIC OVERLAY. Product PIXEL-PERFECT FROZEN. Placed on dynamic background.
+BACKGROUND: More expressive than Slots 3-4. Choose one of:
+  A) Gradient: universe-appropriate two-color gradient at 135° angle. For party/event: warm champagne #F5E6C8 → soft apricot #F0D4B0. For eco: light sage #E8EDE4 → warm beige #F0EAE0. For pyro: near-black #0D0D10 → deep navy #14182B. For wedding: blush white #FFF0F0 → champagne #F5E8D0. For sport: clean white → light steel #E8ECF0.
+  B) Very subtle texture: a real surface photo (linen, concrete, marble, grass) desaturated to 5% opacity as texture overlay on a flat color — adds tactility without distraction.
+  Apply slight vignette at edges. The background must create energy and dynamism while keeping the product as the clear hero.
+PRODUCT PLACEMENT: Off-center — product placed in right third of image, slightly cropped at bottom (15-20% of base cut off by frame edge). This creates drama and tension. Product fills 45-55% of image height. Product must be sharp and fully recognizable despite the crop.
+OCCASION PILLS — design and content:
+  PILL DESIGN:
+    - Shape: 80% rounded rectangle (pill shape), some circles for variety — mix 4 pills + 2 circles for visual rhythm
+    - Size: varies slightly (some larger = more important occasions), range 80-140px wide
+    - Fill: solid color OR white with colored border — choose 3 accent colors from the universe palette and distribute across pills for a cohesive-but-varied look
+    - Drop shadow: very subtle, 2px offset, 4px blur, 15% opacity black — gives pills depth and separation from background
+    - Typography: bold 15-18px, white or dark text (choose per pill background color for contrast), 1-2 French words MAXIMUM per pill
+  PILL CONTENT — extract REAL occasions from the product description. Typical categories: major events (Mariage, Festival, Concert), recurring social moments (Anniversaire, Soirée, Barbecue), professional contexts (Entreprise, Séminaire, Traiteur), sports contexts (Randonnée, Match, Sport), family contexts (Pique-nique, Plage, Camping). Use exactly the occasions mentioned or implied in the product description.
+  PILL ARRANGEMENT: Scattered organically around the product — some to the left, some above, some below. Slight rotation on some pills (±3-5°) for dynamism. Pills should not overlap each other or the product. Natural floating arrangement, like they're suspended in the air around the product.
+TAGLINE: Bottom center of image. One punchy French sentence (max 8 words) that captures the product's versatility and energy. Match the tone to the universe — formal for wedding, playful for party, bold for pyro. Font: clean geometric sans-serif, 18-20px bold, universe accent color or dark neutral.
+THEMATIC MICRO-ELEMENTS: Scatter 6-10 tiny decorative elements in the background (behind the product, at very low opacity 15-25%): for party — small confetti shapes; for eco — tiny leaf silhouettes; for pyro — tiny spark dots; for wedding — tiny heart or floral silhouettes; for sport — tiny motion lines. These add texture and life without competing with content.
+CAMERA/RENDER: Product at f/8 studio sharp quality. Graphic elements at 4K vector crispness.`,
+
+      6: `SLOT 6 — CINEMATIC WIDE SCENE (the most visually impactful image — the one people screenshot and share):
+MISSION: Create an image so beautiful and real that it stops the scroll. This must look like a frame from a premium documentary or a double-page magazine spread. Zero compromise on photographic authenticity.
+PRODUCT PRESERVATION: The product from input is PIXEL-PERFECT FROZEN. Same material, same form, same markings. It exists physically in this scene as if it was always there. It is never recreated or reimagined.
+SCENE CONSTRUCTION — build a fully immersive real-world environment around the product:
+  Step 1: Identify the single most powerful visual context for this product based on its universe and primary use case.
+  Step 2: Build that context with maximum specificity — describe every element in the frame: what is sharp, what is soft, what colors are present, what textures, what human elements if any, what time of day, what weather/atmosphere.
+  Step 3: Place the product naturally within this context, as if it always belonged there.
+UNIVERSE-SPECIFIC SCENE DIRECTION (adapt — do not copy literally for other universe products):
+  - Party/event cup: Long rustic oak table at an outdoor summer festival, golden hour light at 15° from the left, 12-15 frosted translucent cups arranged naturally — some filled with amber lager visible through semi-transparent walls, some with ice and citrus slices, some empty stacked. Hero cup sharp in extreme foreground (right side), warm volumetric sunlight passing through its translucent body creating an amber internal glow. Background: blurred festival crowd silhouettes, string lights beginning to glow as sun sets, warm bokeh circles in deep amber and champagne.
+  - Pyro/smoke: Athlete captured at peak of motion — arms outstretched, smoke bomb held at shoulder height, massive cloud of color (match the product's color) billowing in 3D space around them. Urban rooftop or industrial concrete setting. Dramatic side light from setting sun at 90°, hard rim light from left. Model is sharp, smoke has real volumetric depth and natural dispersion physics.
+  - Wedding: Outdoor garden ceremony at golden hour, product featured naturally in the scene (on a table, held by hands, or displayed). Soft directional light through trees, dappled shadows, real flower arrangements in natural arrangement, guests blurred in background, genuine emotional atmosphere.
+  - Sport/outdoor: Product in active use in the relevant sport/outdoor environment. Real natural landscape. Dramatic natural light — morning mist, golden hour, overcast adventure light. Human in motion or at peak effort if relevant.
+  - Baby: Warm nursery scene, product in use, soft morning window light, cozy textures (linen, knit), parent hands visible and warm, genuine tender moment.
+  - Beauty/wellness: Styled bathroom or vanity scene, product on real marble or stone surface, morning window light with water droplets on surface, clean and aspirational but real and lived-in.
+LIGHTING: The most dramatic natural light appropriate to the scene. Specify:
+  - Light source: Sun at [angle]°, color temperature [Kelvin], quality (direct/through clouds/through foliage)
+  - Key direction: where the main light enters frame from
+  - Shadow behavior: long golden-hour shadows / soft overcast flat shadows / hard midday shadows
+  - Special lighting phenomena: volumetric light rays through smoke, caustic patterns on water, lens flare (subtle, natural), window light shaft
+FILM AESTHETIC (mandatory): Shot on 35mm film. Kodak Portra 400 for warm golden universes: warm color grade, lifted shadow tones (shadows are never pure black — lifted to warm dark brown/charcoal), creamy highlight roll-off, natural green desaturation, fine grain visible at 20% intensity. Fuji Provia for cooler, more saturated scenes. Ilford HP5 for black-and-white dramatic shots.
+CAMERA: Canon EOS-1V (film body) or Sony A7R IV with analog processing. 35mm or 50mm lens, f/2.0-f/3.5 (enough DOF to show environmental context but background remains out of focus). ISO 400-800. Natural handheld slight imperfection (not perfectly level — adds authenticity).
+NO TEXT. No graphic overlays. No badges. No infographic elements. Pure photograph.`,
+
+      7: `SLOT 7 — INTIMATE LIFESTYLE CLOSE-UP (opposite emotional register from Slot 6 — close, human, social):
+MISSION: If Slot 6 is the wide establishing shot that shows the world, Slot 7 is the close-up that shows the human moment. It must feel personal, warm, authentic — like a photo a friend took of a real moment.
+CRITICAL RULE: This image must be COMPLETELY DIFFERENT from Slot 6 in every possible dimension:
+  - Scale: Slot 6 was wide/environmental → Slot 7 is tight/intimate, 85mm portrait compression
+  - Light: Slot 6 had dramatic outdoor natural light → Slot 7 has soft indoor diffused light or open shade
+  - Emotion: Slot 6 was visually spectacular → Slot 7 is emotionally warm and human
+  - Framing: Slot 6 had product in context → Slot 7 has product filling most of frame with human element
+PRODUCT PRESERVATION: Identical product, pixel-perfect, placed in this new intimate scene.
+SCENE DIRECTION by universe:
+  - Party/event/cup: 2-3 human hands naturally holding filled cups in a spontaneous toast — shot from slightly above (15° bird's eye), cups filling 70% of frame. One cup is the hero product (sharp, centered). Other cups slightly soft. Cups contain real drinks visible through translucent walls (amber beer, rosé, citrus juice). Background: warm bokeh of garden party or indoor venue — entirely unidentifiable but emotionally warm. Hands are natural, diverse, relaxed — genuinely mid-toast movement (slight blur on hand movement adds authenticity).
+  - Pyro: Extreme close-up of hands holding the product, colored smoke curling up from it, fingers gripping at natural angle, dramatic side light creating strong shadow on hand texture. Background: pure dark bokeh.
+  - Wedding: Product being held or arranged by manicured hands in a quiet personal moment — bride getting ready, hands adjusting table setting. Soft window light, genuine quiet emotion.
+  - Sport: Product held post-effort — hands showing real exertion (slightly muddy, chalk-dusted, tape on fingers). Shallow DOF, background is blurred natural environment. Real fatigue and satisfaction in the moment.
+  - Baby: Product in use with tiny baby hands or parent hands in gentle interaction. Incredibly soft light. Visible baby skin texture, natural and authentic.
+  - Beauty/wellness: Product applied or held close to skin — texture of both product and skin visible. Clean diffused beauty light from above. Elegant hand position, natural and not posed.
+  - Food/drink: Product being used in a real eating/drinking moment — hands naturally holding, real food/drink visible, warm convivial light.
+  - Home/deco: Product placed in a real home corner with human hand adjusting it — scale reference, warmth, real domestic life aesthetic.
+HANDS: If hands appear, they must be authentic — natural grip pressure visible, real skin texture, natural nail condition (not perfect studio manicure unless it's a beauty product). The moment feels caught, not posed.
+DEPTH OF FIELD: Extreme shallow. 85mm lens, f/1.8 or f/2.0. The hero product is the only thing at perfect focus. Adjacent hands are slightly soft. Everything 50cm behind is completely melted into bokeh.
+LIGHTING: Soft diffused side window light (open north-facing window, no direct sun), 5600-6000K, slightly cool and fresh. OR open shade outdoors (same quality but with ambient bounce). Fill: natural bounce from a white surface. NO rim light for this slot — the intimacy requires no artificial separation.
+FILM: Fuji 400H — cooler, slightly desaturated relative to Portra, cleaner in shadows, gives a fresh and social feel. Fine grain at 15%. Color science: muted but not flat, natural without over-processing.
+CAMERA: Sony A7R IV, 85mm, f/1.8, ISO 400-640, 1/80s. Slight natural handshake (no perfect stabilization) — adds human authenticity.
+NO TEXT. No graphic elements. Pure intimate human photography.`,
     };
 
-    const selectedSlotDescriptions = slotsToGenerate.map(n => `SLOT ${n} (${PB_IMAGE_LABELS[n]}): ${slotDescriptions[n]}`).join('\n');
+    const selectedSlotDescriptions = slotsToGenerate.map(n => `\n=== SLOT ${n}: ${PB_IMAGE_LABELS[n]} ===\n${slotDescriptions[n]}`).join('\n');
 
-    userPrompt = `Product name: ${name || 'Not specified'}
-Product description: ${desc || 'Not specified'}
+    userPrompt = `PRODUCT TO PHOTOGRAPH:
+Product name: ${name || 'Not specified'}
+Product description / bullet points:
+${desc || 'Not specified'}
 
-Generate ${slotsToGenerate.length === 1 ? 'this image prompt' : 'these ' + slotsToGenerate.length + ' image prompts'} for Amazon product photography:
+---
+
+STEP 1 — PRODUCT ANALYSIS (do this before writing any prompt):
+- Detect the visual universe (eco, party, wedding, pyro, sport, food, home, baby, beauty, or other)
+- Identify the primary material and describe exactly how light physically interacts with it
+- Extract key specs and benefits from the description that will be used in Slots 3, 4, 5
+- Identify the single most powerful use occasion for Slot 6 scene building
+- Note any brand identity elements (color, tone, positioning) visible in the description
+
+STEP 2 — WRITE THE PROMPTS:
+For each slot below, write an exhaustive, technically complete prompt of MINIMUM 300 words. Be specific to THIS product — not generic. Use the product's actual specs, materials, occasions, and universe. Every single detail must serve the goal of a 4K photorealistic, commercially stunning Amazon product image.
 
 ${selectedSlotDescriptions}
 
-For each prompt:
-1. First detect the product's visual universe and key material from the name/description
-2. Identify how light interacts with this material (translucent, metallic, fabric, etc.)
-3. Write a hyper-specific, technically detailed prompt ready to paste into an AI image tool
-
-Return ONLY this JSON:
+STEP 3 — RETURN JSON:
+Return ONLY this exact JSON structure, no markdown, no preamble:
 {
-  "universe_detected": "name of detected universe",
-  "material_analysis": "how light interacts with this product's material",
+  "universe_detected": "detected universe name",
+  "material_analysis": "detailed description of how light interacts with this product's material",
+  "key_specs_extracted": ["spec1", "spec2", "spec3"],
   "prompts": [
-    ${slotsToGenerate.map(n => `{"slot": ${n}, "label": "${PB_IMAGE_LABELS[n]}", "prompt": "..."}`).join(',\n    ')}
+    ${slotsToGenerate.map(n => `{"slot": ${n}, "label": "${PB_IMAGE_LABELS[n]}", "prompt": "minimum 300 words, fully specific to this product"}`).join(',\n    ')}
   ]
 }`;
   } else {
@@ -1082,7 +1259,7 @@ Return ONLY this JSON:
     const res = await fetch(`${PROXY.anthropic}/v1/messages`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8000, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
     });
     const data = await res.json();
     const raw = data.content?.[0]?.text || '';
@@ -1100,7 +1277,8 @@ Return ONLY this JSON:
 
     if (cat === 'image') {
       document.getElementById('pb-result-label').textContent =
-        `Univers: ${parsed.universe_detected || '—'} · Matière: ${parsed.material_analysis || '—'}`;
+        `Univers: ${parsed.universe_detected || '—'} · ${parsed.material_analysis || '—'}` +
+        (parsed.key_specs_extracted?.length ? ` · Specs: ${parsed.key_specs_extracted.slice(0,3).join(', ')}` : '');
 
       const prompts = parsed.prompts || [];
 
