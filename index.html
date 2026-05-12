@@ -87,6 +87,12 @@ option{background:#1a1a23}
 .pv-text.expanded::after{opacity:0}
 .pv-expand{font-size:9px;color:var(--mu2);cursor:pointer;text-align:right;margin-top:2px}
 .pv-expand:hover{color:var(--acc)}
+.slot-sel-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 2px;border-radius:6px;cursor:pointer;border:1.5px solid var(--b2);background:var(--s2);transition:all .15s;gap:2px;user-select:none}
+.slot-sel-btn:hover{border-color:var(--acc);background:var(--adim)}
+.slot-sel-btn.active{border-color:var(--acc);background:var(--adim)}
+.slot-sel-btn .ssn{font-size:13px;font-weight:700;line-height:1;color:var(--mu)}
+.slot-sel-btn.active .ssn{color:var(--acc)}
+.slot-sel-btn .ssl{font-size:8px;color:var(--mu2);text-align:center;line-height:1.2;max-width:32px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tabs{display:flex;border-bottom:1px solid var(--b1);margin-bottom:14px;gap:2px}
 .tab{padding:8px 14px;font-size:12px;cursor:pointer;color:var(--mu);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
 .tab.active{color:var(--acc);border-bottom-color:var(--acc);font-weight:500}
@@ -646,9 +652,23 @@ option{background:#1a1a23}
         </div>
       </div>
 
+      <!-- Slot selector -->
+      <div style="margin-bottom:8px;padding:10px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--b1)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--mu)">SLOTS À GÉNÉRER</div>
+          <div style="display:flex;gap:6px">
+            <button class="cbtn" onclick="slotSelAll()">Tout</button>
+            <button class="cbtn" onclick="slotSelNone()">Aucun</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px" id="slot-sel-grid">
+          <!-- injected by JS -->
+        </div>
+      </div>
+
       <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:6px" id="btn-img-gen" onclick="startImageGen()">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 8H3M13 8l-4-4M13 8l-4 4"/></svg>
-        Générer les 7 images
+        <span id="btn-img-gen-label">Générer les 7 images</span>
       </button>
 
       <div id="img-log-wrap" style="margin-top:10px">
@@ -940,7 +960,7 @@ const S = {
   _csvIdx:0,_csvOk:0,_csvErr:0,
 };
 document.getElementById('api-inp').value = S.apiKey;
-updApiDot(); renderHist();
+updApiDot(); renderHist(); slotSelInit();
 
 // ============ NAVIGATION ============
 function setMode(m) {
@@ -957,21 +977,68 @@ function setPanel(p) {
   });
 }
 
-// ============ IMAGE STEPPER UX ============
+// ============ SLOT SELECTOR ============
+const SLOT_SHORT = ['Blanc','Style','Specs','Bénéf.','Occas.','Cinéma','Intime'];
+let selectedSlots = new Set([0,1,2,3,4,5,6]);
+
+function slotSelInit() {
+  const grid = document.getElementById('slot-sel-grid');
+  if (!grid) return;
+  grid.innerHTML = SLOT_LABELS.map((l,i) => `
+    <div class="slot-sel-btn active" id="ssel-${i}" onclick="slotSelToggle(${i})" title="${l}">
+      <span class="ssn">${i+1}</span>
+      <span class="ssl">${SLOT_SHORT[i]}</span>
+    </div>`).join('');
+  slotSelUpdateBtn();
+}
+
+function slotSelToggle(i) {
+  if (selectedSlots.has(i)) {
+    if (selectedSlots.size === 1) return; // keep at least 1
+    selectedSlots.delete(i);
+  } else {
+    selectedSlots.add(i);
+  }
+  document.getElementById(`ssel-${i}`).classList.toggle('active', selectedSlots.has(i));
+  slotSelUpdateBtn();
+}
+
+function slotSelAll() {
+  for(let i=0;i<7;i++) { selectedSlots.add(i); document.getElementById(`ssel-${i}`).classList.add('active'); }
+  slotSelUpdateBtn();
+}
+
+function slotSelNone() {
+  selectedSlots.clear(); selectedSlots.add(0); // keep at least 1
+  for(let i=0;i<7;i++) document.getElementById(`ssel-${i}`).classList.toggle('active', i===0);
+  slotSelUpdateBtn();
+}
+
+function slotSelUpdateBtn() {
+  const n = selectedSlots.size;
+  const lbl = document.getElementById('btn-img-gen-label');
+  if (lbl) lbl.textContent = n === 7 ? 'Générer les 7 images' : n === 1 ? `Générer l'image ${[...selectedSlots][0]+1}` : `Générer ${n} images (${[...selectedSlots].map(i=>i+1).join(', ')})`;
+}
+
+// Init on load
+document.addEventListener('DOMContentLoaded', slotSelInit);
+
+
 const STEP_LABELS = ['Fond blanc studio','Lifestyle premium','Specs infographie','Bénéfices infographie','Occasions d\'usage','Ambiance cinématique','Lifestyle intime'];
 
 function stepperInit() {
   // Reset analyse step
   stepSet('analyse', 'pending', 'En attente');
   stepSet('images', 'pending', 'En attente');
-  // Build 7 slot steps
+  // Build slot steps only for selected slots
   const wrap = document.getElementById('step-prompts-wrap');
-  wrap.innerHTML = STEP_LABELS.map((l,i) => `
+  const slots = [...selectedSlots].sort();
+  wrap.innerHTML = slots.map(i => `
     <div class="step-connector"></div>
     <div class="step-row" id="step-prompt-${i}">
       <div class="step-dot pending" id="sdot-prompt-${i}">○</div>
       <div class="step-info">
-        <div class="step-label">Prompt ${i+1} — ${l}</div>
+        <div class="step-label">Prompt ${i+1} — ${STEP_LABELS[i]}</div>
         <div class="step-sub" id="ssub-prompt-${i}">En attente</div>
       </div>
     </div>`).join('');
@@ -2436,7 +2503,7 @@ function syncColor(hex) {
 }
 
 // --- STEP 1: Extract specs + generate image prompts via Claude ---
-async function extractSpecsAndPrompts() {
+async function extractSpecsAndPrompts(slotsToRun = [0,1,2,3,4,5,6]) {
   const name    = document.getElementById('img-name').value.trim();
   const desc    = document.getElementById('img-desc').value.trim();
   const bullets = document.getElementById('img-bullets').value.trim();
@@ -2545,8 +2612,9 @@ Camera: Sony A7R IV, 85mm, f/1.8, ISO 400-640. NO TEXT. Square 1:1, 4K.`,
   const LABELS = ['Fond blanc studio','Lifestyle premium','Infographie specs','Infographie bénéfices','Usage & occasions','Ambiance cinématique','Lifestyle intime'];
   const prompts = [];
 
-  for (let i = 0; i < 7; i++) {
-    imgLog('lin', `Prompt ${i+1}/7 — ${LABELS[i]}…`);
+  for (let idx = 0; idx < slotsToRun.length; idx++) {
+    const i = slotsToRun[idx];
+    imgLog('lin', `Prompt ${idx+1}/${slotsToRun.length} — ${LABELS[i]}…`);
     stepPromptSet(i, 'running', 'Génération…');
     const slotRes = await fetch(`${PROXY.anthropic}/v1/messages`, {
       method: 'POST',
@@ -2654,23 +2722,26 @@ async function startImageGen() {
   IMG.generating = true;
   _imgAllPrompts = [];
   stepperInit();
+  const slotsToRun = [...selectedSlots].sort();
   const btn = document.getElementById('btn-img-gen');
   btn.disabled = true;
   btn.innerHTML = '<span class="img-spin" style="width:12px;height:12px;border-width:2px;display:inline-block"></span> Génération…';
-  for(let i=0;i<7;i++) setSlotGen(i);
+  // Only set loading state for selected slots
+  for(let i of slotsToRun) setSlotGen(i);
   document.getElementById('img-dl-all').style.display = 'none';
 
   try {
-    imgLog('lin', 'Claude génère les prompts image optimisés…');
-    const prompts = await extractSpecsAndPrompts();
-    imgLog('lok', `✓ 7 prompts générés par Claude`);
+    imgLog('lin', `Claude génère ${slotsToRun.length} prompt(s)…`);
+    const prompts = await extractSpecsAndPrompts(slotsToRun);
+    imgLog('lok', `✓ ${slotsToRun.length} prompts générés`);
 
     imgLog('lin', 'Lancement génération images…');
     stepSet('images', 'running', 'Génération en cours…');
     let successCount = 0;
 
-    for(let i=0;i<7;i++) {
-      const p = prompts[i];
+    for(let idx=0; idx<slotsToRun.length; idx++) {
+      const i = slotsToRun[idx];
+      const p = prompts[idx];
       imgLog('lin', `Image ${i+1}/7 — ${p.label}…`);
       try {
         const imgSrc = IMG.dataUrl || document.getElementById('img-url').value.trim();
@@ -2684,7 +2755,7 @@ async function startImageGen() {
         setSlotErr(i, e.message);
         imgLog('ler', `✗ Image ${i+1} : ${e.message.substring(0,80)}`);
       }
-      if(i < 6) await sl(1200);
+      if(idx < slotsToRun.length-1) await sl(1200);
     }
 
     if(successCount > 0) {
