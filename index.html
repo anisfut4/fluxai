@@ -804,6 +804,37 @@ hr.div{border:none;border-top:1px solid var(--b1);margin:12px 0}
         </div>
       </div>
 
+      <div class="card" id="pb-ref-card">
+        <div class="ch">Image de référence <span class="badge bgr" style="font-size:9px;margin-left:4px">optionnel</span></div>
+        <div class="cs">Uploade une image pour s'en inspirer — style, composition, ambiance, couleurs</div>
+        <div class="fg">
+          <div id="pb-ref-drop" onclick="document.getElementById('pb-ref-input').click()" style="border:1.5px dashed var(--b2);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:all .15s;position:relative" onmouseenter="this.style.borderColor='var(--acc)'" onmouseleave="this.style.borderColor='var(--b2)'" ondragover="event.preventDefault();this.style.borderColor='var(--acc)'" ondragleave="this.style.borderColor='var(--b2)'" ondrop="pbHandleDrop(event)">
+            <div id="pb-ref-placeholder" style="color:var(--mu);font-size:12px">
+              <div style="font-size:20px;margin-bottom:4px">🖼</div>
+              Glisse une image ici ou clique pour choisir<br>
+              <span style="font-size:10px;opacity:.6">JPG, PNG, WEBP — max 4MB</span>
+            </div>
+            <div id="pb-ref-preview" style="display:none;flex-direction:column;align-items:center;gap:8px">
+              <img id="pb-ref-img" style="max-height:120px;max-width:100%;border-radius:6px;object-fit:contain">
+              <div style="display:flex;gap:6px;align-items:center">
+                <span id="pb-ref-name" style="font-size:10px;color:var(--mu);font-family:'DM Mono',monospace"></span>
+                <button class="cbtn" onclick="event.stopPropagation();pbClearRef()" style="color:var(--er);border-color:rgba(224,72,72,.3)">✕ Retirer</button>
+              </div>
+            </div>
+          </div>
+          <input type="file" id="pb-ref-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="pbHandleRefImage(this.files[0])">
+        </div>
+        <div class="fg" id="pb-ref-mode-wrap" style="display:none">
+          <label class="fl">Ce que Claude doit en extraire</label>
+          <select class="fs" id="pb-ref-mode">
+            <option value="style">🎨 Style visuel — ambiance, couleurs, mood général</option>
+            <option value="composition">📐 Composition — cadrage, placement produit, mise en scène</option>
+            <option value="lighting">💡 Éclairage — type de lumière, ombres, film stock</option>
+            <option value="all">✦ Tout analyser — style + compo + lumière</option>
+          </select>
+        </div>
+      </div>
+
       <button class="btn btn-p" style="width:100%;margin-top:4px;padding:11px;font-size:14px" onclick="pbGenerate()">
         ⚡ Générer le prompt
       </button>
@@ -905,7 +936,42 @@ function setPanel(p) {
   });
 }
 
-// ============ PROMPT BUILDER ============
+// ============ PROMPT BUILDER REF IMAGE ============
+let pbRefImageB64 = null;
+let pbRefImageType = 'image/jpeg';
+
+function pbHandleRefImage(file) {
+  if (!file) return;
+  if (file.size > 4 * 1024 * 1024) { alert('Image trop lourde — max 4MB'); return; }
+  pbRefImageType = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = e => {
+    pbRefImageB64 = e.target.result.split(',')[1];
+    document.getElementById('pb-ref-img').src = e.target.result;
+    document.getElementById('pb-ref-name').textContent = file.name + ' · ' + Math.round(file.size/1024) + 'KB';
+    document.getElementById('pb-ref-placeholder').style.display = 'none';
+    document.getElementById('pb-ref-preview').style.display = 'flex';
+    document.getElementById('pb-ref-mode-wrap').style.display = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function pbHandleDrop(e) {
+  e.preventDefault();
+  e.currentTarget.style.borderColor = 'var(--b2)';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) pbHandleRefImage(file);
+}
+
+function pbClearRef() {
+  pbRefImageB64 = null;
+  document.getElementById('pb-ref-input').value = '';
+  document.getElementById('pb-ref-placeholder').style.display = '';
+  document.getElementById('pb-ref-preview').style.display = 'none';
+  document.getElementById('pb-ref-mode-wrap').style.display = 'none';
+}
+
+
 function pbUpdateSlots() {
   const cat = document.getElementById('pb-category').value;
   document.getElementById('pb-slot-wrap').style.display = cat === 'image' ? '' : 'none';
@@ -1291,12 +1357,31 @@ Return ONLY this JSON:
   try {
     // Step 1: product analysis (fast, ~1s)
     document.getElementById('pb-loading-txt').textContent = 'Analyse produit...';
-    const analysisRes = await fetch(`${PROXY.anthropic}/v1/messages`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 600,
-        messages: [{ role: 'user', content: `Analyze this product. Return ONLY raw JSON, no markdown:
+
+    const refMode = document.getElementById('pb-ref-mode')?.value || 'all';
+    const refInstructions = pbRefImageB64 ? {
+      style: 'From the reference image, extract: dominant color palette (exact hex if possible), overall mood and atmosphere, visual style (editorial/commercial/lifestyle/cinematic), any specific aesthetic choices worth replicating.',
+      composition: 'From the reference image, extract: product placement in frame (center/rule of thirds/off-center), camera angle (eye level/above/below), depth of field feeling, foreground/background relationship, negative space usage.',
+      lighting: 'From the reference image, extract: light source type and direction, color temperature (warm/cool/neutral), shadow quality (hard/soft), highlight behavior, any special lighting effects, film stock feel.',
+      all: 'From the reference image, extract ALL of: (1) color palette and mood, (2) composition and framing, (3) lighting setup and film stock feel, (4) any specific visual techniques worth replicating in the prompts.',
+    }[refMode] : null;
+
+    const analysisMessages = pbRefImageB64 ? [{ role: 'user', content: [
+      { type: 'image', source: { type: 'base64', media_type: pbRefImageType, data: pbRefImageB64 } },
+      { type: 'text', text: `Analyze this product AND the reference image. Return ONLY raw JSON, no markdown:
+Product: ${name}
+Description: ${(desc||'').substring(0,800)}
+
+Reference image task: ${refInstructions}
+
+{"universe":"one word: eco/party/wedding/pyro/sport/food/home/baby/beauty/other",
+"material":"one sentence: how light physically interacts with this material",
+"specs":["spec1","spec2","spec3","spec4"],
+"benefits":["benefit1","benefit2","benefit3","benefit4"],
+"occasions":["occasion1","occasion2","occasion3","occasion4","occasion5"],
+"cinematic_scene":"one sentence: most powerful outdoor cinematic scene for this product",
+"ref_analysis":"detailed visual analysis extracted from the reference image — be specific about colors, light, composition, mood, techniques"}` }
+    ]}] : [{ role: 'user', content: `Analyze this product. Return ONLY raw JSON, no markdown:
 Product: ${name}
 Description: ${(desc||'').substring(0,800)}
 
@@ -1305,8 +1390,12 @@ Description: ${(desc||'').substring(0,800)}
 "specs":["spec1","spec2","spec3","spec4"],
 "benefits":["benefit1","benefit2","benefit3","benefit4"],
 "occasions":["occasion1","occasion2","occasion3","occasion4","occasion5"],
-"cinematic_scene":"one sentence: most powerful outdoor cinematic scene for this product"}` }]
-      })
+"cinematic_scene":"one sentence: most powerful outdoor cinematic scene for this product",
+"ref_analysis":null}` }];
+    const analysisRes = await fetch(`${PROXY.anthropic}/v1/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 800, messages: analysisMessages })
     });
     const aData = await analysisRes.json();
     const analysis = JSON.parse((aData.content?.[0]?.text||'').replace(/```json|```/g,'').trim());
@@ -1314,7 +1403,8 @@ Description: ${(desc||'').substring(0,800)}
     // Show result panel, build skeleton
     document.getElementById('pb-loading').style.display='none';
     document.getElementById('pb-result').style.display='flex';
-    document.getElementById('pb-result-label').textContent = `Univers: ${analysis.universe} · ${analysis.material}`;
+    document.getElementById('pb-result-label').textContent = `Univers: ${analysis.universe} · ${analysis.material}` +
+      (analysis.ref_analysis ? ' · 📸 Réf analysée' : '');
 
     const wrap = document.getElementById('pb-output-wrap');
     const nav = document.getElementById('pb-slots-nav');
@@ -1422,6 +1512,7 @@ UNIVERSE: ${analysis.universe} | MATERIAL: ${analysis.material}
 SPECS: ${(analysis.specs||[]).join(', ')} | BENEFITS: ${(analysis.benefits||[]).join(', ')}
 OCCASIONS: ${(analysis.occasions||[]).join(', ')}
 DESCRIPTION EXTRACT: ${(desc||'').substring(0,400)}
+${analysis.ref_analysis ? `\nREFERENCE IMAGE ANALYSIS (integrate these visual cues into your prompt):\n${analysis.ref_analysis}` : ''}
 
 WRITE PROMPT FOR:
 ${SLOT_BRIEFS[n]}
