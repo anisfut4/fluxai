@@ -2657,24 +2657,22 @@ async function startImageGen() {
   const btn = document.getElementById('btn-img-gen');
   btn.disabled = true;
   btn.innerHTML = '<span class="img-spin" style="width:12px;height:12px;border-width:2px;display:inline-block"></span> Génération…';
-  for(let i=0;i<5;i++) setSlotGen(i);
+  for(let i=0;i<7;i++) setSlotGen(i);
   document.getElementById('img-dl-all').style.display = 'none';
 
   try {
     imgLog('lin', 'Claude génère les prompts image optimisés…');
     const prompts = await extractSpecsAndPrompts();
-    showPromptsPrev(prompts);
-    imgLog('lok', `✓ 5 prompts générés par Claude`);
+    imgLog('lok', `✓ 7 prompts générés par Claude`);
 
-    imgLog('lin', 'Lancement génération Nano Banana Pro…');
+    imgLog('lin', 'Lancement génération images…');
     stepSet('images', 'running', 'Génération en cours…');
     let successCount = 0;
 
     for(let i=0;i<7;i++) {
       const p = prompts[i];
-      imgLog('lin', `Image ${i+1}/5 — ${p.label}…`);
+      imgLog('lin', `Image ${i+1}/7 — ${p.label}…`);
       try {
-        // Get image source — prefer base64 upload over external URL
         const imgSrc = IMG.dataUrl || document.getElementById('img-url').value.trim();
         const provider = getProviderForSlot(i);
         const url = await genOneGPTImage(p, imgSrc, provider);
@@ -2686,7 +2684,7 @@ async function startImageGen() {
         setSlotErr(i, e.message);
         imgLog('ler', `✗ Image ${i+1} : ${e.message.substring(0,80)}`);
       }
-      if(i < 6) await sl(1200); // GPT Image needs a bit more time between calls
+      if(i < 6) await sl(1200);
     }
 
     if(successCount > 0) {
@@ -2698,7 +2696,8 @@ async function startImageGen() {
     }
 
   } catch(e) {
-    for(let i=0;i<5;i++) setSlotErr(i, e.message);
+    for(let i=0;i<7;i++) setSlotErr(i, e.message);
+    stepSet('images', 'error', e.message.substring(0,50));
     imgLog('ler', '✗ ' + e.message);
   }
 
