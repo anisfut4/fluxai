@@ -2745,19 +2745,40 @@ async function startImageGen() {
       const i = slotsToRun[idx];
       const p = prompts[idx];
       imgLog('lin', `Image ${i+1}/7 — ${p.label}…`);
-      try {
-        const imgSrc = IMG.dataUrl || document.getElementById('img-url').value.trim();
-        const provider = getProviderForSlot(i);
-        const url = await genOneGPTImage(p, imgSrc, provider);
-        IMG.results[i] = url;
-        setSlotResult(i, url);
-        successCount++;
-        imgLog('lok', `✓ Image ${i+1} — ${p.label}`);
-      } catch(e) {
-        setSlotErr(i, e.message);
-        imgLog('ler', `✗ Image ${i+1} : ${e.message.substring(0,80)}`);
+
+      // Retry with exponential backoff — 3 attempts
+      let lastErr = null;
+      let generated = false;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          if (attempt > 1) {
+            const wait = attempt === 2 ? 8000 : 15000;
+            imgLog('lin', `↻ Tentative ${attempt}/3 dans ${wait/1000}s… (surcharge API)`);
+            setSlotGen(i); // reset slot to loading
+            await sl(wait);
+          }
+          const imgSrc = IMG.dataUrl || document.getElementById('img-url').value.trim();
+          const provider = getProviderForSlot(i);
+          const url = await genOneGPTImage(p, imgSrc, provider);
+          IMG.results[i] = url;
+          setSlotResult(i, url);
+          successCount++;
+          imgLog('lok', `✓ Image ${i+1} — ${p.label}${attempt > 1 ? ` (tentative ${attempt})` : ''}`);
+          generated = true;
+          break;
+        } catch(e) {
+          lastErr = e;
+          const isOverload = e.message.toLowerCase().includes('demand') || e.message.includes('529') || e.message.includes('overload') || e.message.includes('rate') || e.message.includes('capacity');
+          if (!isOverload || attempt === 3) break; // don't retry non-overload errors
+        }
       }
-      if(idx < slotsToRun.length-1) await sl(1200);
+      if (!generated) {
+        setSlotErr(i, lastErr?.message || 'Erreur');
+        imgLog('ler', `✗ Image ${i+1} : ${(lastErr?.message||'').substring(0,80)}`);
+      }
+
+      // Longer delay between images to reduce rate limit hits
+      if(idx < slotsToRun.length-1) await sl(3500);
     }
 
     if(successCount > 0) {
