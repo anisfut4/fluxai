@@ -218,7 +218,7 @@ option{background:#1a1a23}
   <div class="sico" id="ico-prompt" onclick="setPanel('prompt')" title="Prompt Builder">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h5"/><path d="M12 9l2 2-2 2M14 11h-4"/></svg>
   </div>
-  <div class="sico" id="ico-peps" onclick="setPanel('peps')" title="Export Peps">
+  <div class="sico" id="ico-peps" onclick="setPanel('peps')" title="Import Peps">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="1.5" width="10" height="13" rx="1.5"/><path d="M5 5h6M5 7.5h6M5 10h4"/><path d="M10 12l2 2 3-3" stroke-width="1.8"/></svg>
   </div>
   <div class="sico-sep"></div>
@@ -931,238 +931,149 @@ option{background:#1a1a23}
 
   </div>
 </div>
-<!-- ===== PEPS EXPORT ===== -->
+<!-- ===== PEPS IMPORT ENRICHISSEMENT ===== -->
 <div class="view" id="panel-peps">
-  <div class="panel-grid p3" style="flex:1;overflow:hidden">
+  <div class="panel-grid" style="grid-template-columns:320px 1fr 280px;flex:1;overflow:hidden">
 
-    <!-- Col 1: Produit -->
+    <!-- Col 1: Upload + Config -->
     <div class="panel" style="display:flex;flex-direction:column;gap:0;overflow-y:auto">
-      <div class="ptitle">Export Peps</div>
+      <div class="ptitle">Import Peps</div>
 
       <div class="card">
-        <div class="ch">Produit</div>
-        <div class="fg">
-          <label class="fl">Nom du produit *</label>
-          <input class="fi" id="peps-name" placeholder="ex: SPARKLERS CLUB Lot 100 Gobelets 25cl">
+        <div class="ch">Template Peps</div>
+        <div class="cs">Upload ton fichier partiellement rempli — FluxAI complète tout</div>
+        <div id="peps-drop-zone" onclick="document.getElementById('peps-file-input').click()"
+          style="border:1.5px dashed var(--b2);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;transition:border-color .15s"
+          ondragover="event.preventDefault();this.style.borderColor='var(--acc)'"
+          ondragleave="this.style.borderColor='var(--b2)'"
+          ondrop="pepsDropFile(event)">
+          <div id="peps-drop-placeholder" style="color:var(--mu);font-size:12px">
+            <div style="font-size:24px;margin-bottom:6px">📥</div>
+            Glisse le template Peps ici<br>
+            <span style="font-size:10px;opacity:.6">.xlsx ou .xls</span>
+          </div>
+          <div id="peps-drop-loaded" style="display:none;color:var(--txt);font-size:12px">
+            <div style="font-size:20px;margin-bottom:4px">✅</div>
+            <div id="peps-file-name" style="font-weight:600"></div>
+            <div id="peps-file-info" style="font-size:10px;color:var(--mu);margin-top:2px"></div>
+          </div>
         </div>
-        <div class="fg">
-          <label class="fl">Marque</label>
-          <input class="fi" id="peps-brand" placeholder="Sparklers Club (défaut si vide)">
-        </div>
-        <div class="fg">
-          <label class="fl">Description courte</label>
-          <textarea class="ft" id="peps-desc-short" rows="2" placeholder="Description courte produit..."></textarea>
-        </div>
-        <div class="fg">
-          <label class="fl">Description longue / Bullets source</label>
-          <textarea class="ft" id="peps-desc-long" rows="5" placeholder="Colle ici la description complète ou les bullets Amazon..."></textarea>
+        <input type="file" id="peps-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="pepsLoadFile(this.files[0])">
+        <div id="peps-parsed-preview" style="display:none;margin-top:8px">
+          <div style="font-size:10px;font-weight:600;color:var(--mu);margin-bottom:6px;letter-spacing:.06em">APERÇU DES PRODUITS DÉTECTÉS</div>
+          <div id="peps-products-list" style="display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto"></div>
         </div>
       </div>
 
       <div class="card">
-        <div class="ch">Métadonnées Amazon</div>
+        <div class="ch">Options enrichissement</div>
         <div class="fg">
-          <label class="fl">Type de produit</label>
-          <input class="fi" id="peps-type" placeholder="ex: Gobelet, Fumigène, Ballon...">
+          <label class="fl">Marque par défaut</label>
+          <input class="fi" id="peps-default-brand" value="Sparklers Club" placeholder="Sparklers Club">
         </div>
         <div class="fg">
-          <label class="fl">Pays d'origine</label>
-          <input class="fi" id="peps-origin" placeholder="ex: France">
-        </div>
-        <div class="fg">
-          <label class="fl">Matériau</label>
-          <input class="fi" id="peps-material" placeholder="ex: Polypropylène PP">
-        </div>
-        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div>
-            <label class="fl">Public cible 1</label>
-            <input class="fi" id="peps-target1" placeholder="ex: Adultes">
-          </div>
-          <div>
-            <label class="fl">Public cible 2</label>
-            <input class="fi" id="peps-target2" placeholder="ex: Professionnels">
-          </div>
-        </div>
-        <div class="fg">
-          <label class="fl">Types d'occasion (séparés par virgule)</label>
-          <input class="fi" id="peps-occasions" placeholder="ex: Mariage, Anniversaire, Festival, EVJF">
-        </div>
-        <div class="fg">
-          <label class="fl">Mots-clés de recherche</label>
-          <textarea class="ft" id="peps-keywords" rows="2" placeholder="gobelet réutilisable, ecocup, verre plastique..."></textarea>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="ch">Variations</div>
-        <div class="cs">Import CSV avec colonnes variation</div>
-        <div class="fg">
-          <label class="fl">Thème de variation</label>
-          <select class="fs" id="peps-variation-theme">
-            <option value="">Aucune variation (produit simple)</option>
-            <option value="Couleur">Couleur</option>
-            <option value="Taille">Taille</option>
-            <option value="Quantité">Quantité</option>
-            <option value="Couleur et Taille">Couleur et Taille</option>
-            <option value="Modèle">Modèle</option>
-            <option value="Nombre d'articles">Nombre d'articles</option>
-            <option value="Style et Quantité">Style et Quantité</option>
-            <option value="Taille et Quantité par lot">Taille et Quantité par lot</option>
-            <option value="Motif">Motif</option>
+          <label class="fl">Langue</label>
+          <select class="fs" id="peps-lang">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
           </select>
         </div>
-        <div class="fg" id="peps-csv-wrap">
-          <label class="fl">Import CSV variations</label>
-          <div id="peps-csv-drop" onclick="document.getElementById('peps-csv-input').click()"
-            style="border:1.5px dashed var(--b2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;font-size:11px;color:var(--mu)"
-            ondragover="event.preventDefault();this.style.borderColor='var(--acc)'"
-            ondragleave="this.style.borderColor='var(--b2)'"
-            ondrop="pepsHandleCsvDrop(event)">
-            📄 Glisse ton CSV ici ou clique<br>
-            <span style="font-size:10px;opacity:.6">Colonnes: SKU, EAN, Couleur, Taille, Quantité, Prix</span>
+        <div class="fg">
+          <label class="fl">Champs à réécrire</label>
+          <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
+            <label style="display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer">
+              <input type="checkbox" id="peps-rewrite-title" checked style="accent-color:var(--acc)"> Titre (optimisation Amazon)
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer">
+              <input type="checkbox" id="peps-rewrite-bullets" checked style="accent-color:var(--acc)"> Bullet points (1-10)
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer">
+              <input type="checkbox" id="peps-rewrite-desc" checked style="accent-color:var(--acc)"> Descriptions courte & longue
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer">
+              <input type="checkbox" id="peps-rewrite-keywords" checked style="accent-color:var(--acc)"> Mots-clés recherche & backend
+            </label>
           </div>
-          <input type="file" id="peps-csv-input" accept=".csv" style="display:none" onchange="pepsLoadCsv(this.files[0])">
         </div>
-        <div id="peps-csv-preview" style="display:none">
-          <div style="font-size:10px;color:var(--mu);margin-bottom:4px" id="peps-csv-info"></div>
-          <div style="max-height:100px;overflow-y:auto;font-size:10px;font-family:'DM Mono',monospace;background:var(--s1);border-radius:6px;padding:6px" id="peps-csv-rows"></div>
-          <button class="cbtn" style="margin-top:6px;color:var(--er)" onclick="pepsClearCsv()">✕ Retirer</button>
+        <div class="fg">
+          <label class="fl">Directives supplémentaires</label>
+          <textarea class="ft" id="peps-directives" rows="2" placeholder="ex: Mettre en avant Made in France, ton premium, cible B2B..."></textarea>
         </div>
       </div>
 
-      <div class="card">
-        <div class="ch">Images & Prix</div>
-        <div class="fg">
-          <label class="fl">Visuels Peps</label>
-          <select class="fs" id="peps-visuals">
-            <option value="oui">oui — récupérer photos depuis Peps</option>
-            <option value="">non — utiliser les URLs ci-dessous</option>
-          </select>
-        </div>
-        <div id="peps-img-urls" style="display:none">
-          <div class="fg"><label class="fl">Image URL 1 (JPG)</label><input class="fi" id="peps-img1" placeholder="https://...jpg"></div>
-          <div class="fg"><label class="fl">Image URL 2 (JPG)</label><input class="fi" id="peps-img2" placeholder="https://...jpg"></div>
-          <div class="fg"><label class="fl">Image URL 3 (JPG)</label><input class="fi" id="peps-img3" placeholder="https://...jpg"></div>
-        </div>
-        <div class="fg" id="peps-price-wrap" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <div><label class="fl">Prix TTC *</label><input class="fi" id="peps-price" type="number" step="0.01" placeholder="14.90"></div>
-          <div><label class="fl">Prix min TTC</label><input class="fi" id="peps-price-min" type="number" step="0.01" placeholder="12.90"></div>
-          <div><label class="fl">Livraison TTC</label><input class="fi" id="peps-shipping" type="number" step="0.01" placeholder="0"></div>
-        </div>
-        <div class="fg">
-          <label class="fl">Délai livraison (jours ouvrés 1-15)</label>
-          <input class="fi" id="peps-delivery" type="number" min="1" max="15" placeholder="3">
-        </div>
-      </div>
-
-      <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:4px" onclick="pepsGenerate()">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 1v10M3 6l5 5 5-5"/><path d="M1 13h14"/></svg>
-        Générer le contenu & Export Excel
+      <button class="btn btn-p" id="peps-gen-btn" style="width:100%;justify-content:center;margin-top:4px" onclick="pepsEnrich()" disabled>
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M8 3l5 5-5 5"/></svg>
+        <span id="peps-gen-label">Enrichir les fiches</span>
       </button>
     </div>
 
-    <!-- Col 2: Preview contenu généré -->
+    <!-- Col 2: Progression + Résultats -->
     <div class="panel" style="display:flex;flex-direction:column;gap:0">
-      <div class="ptitle">Contenu généré</div>
-
-      <div id="peps-empty" style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--mu)">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".3"><rect x="6" y="4" width="24" height="32" rx="3"/><path d="M12 13h16M12 19h16M12 25h10"/></svg>
-        <div style="font-size:12px;text-align:center">Configure ton produit<br>et clique sur Générer</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;margin-bottom:12px">
+        <div class="ptitle" style="margin-bottom:0">Fiches enrichies</div>
+        <button class="cbtn" id="peps-dl-btn" style="display:none" onclick="pepsExport()">⬇ Télécharger .xlsx</button>
       </div>
 
-      <div id="peps-loading" style="display:none;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--mu)">
-        <div class="spin" style="width:22px;height:22px;border:2px solid var(--b2);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite"></div>
-        <div style="font-size:12px" id="peps-loading-txt">Génération en cours...</div>
+      <!-- Empty state -->
+      <div id="peps-result-empty" style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--mu)">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".25"><rect x="6" y="4" width="28" height="36" rx="3"/><path d="M13 15h18M13 21h18M13 27h12"/><circle cx="34" cy="34" r="8" fill="var(--bg)" stroke-width="1.5"/><path d="M31 34l2 2 4-4" stroke-width="1.8"/></svg>
+        <div style="font-size:12px;text-align:center">Upload ton template Peps<br>et lance l'enrichissement</div>
       </div>
 
-      <div id="peps-result" style="display:none;flex-direction:column;gap:8px;flex:1;overflow-y:auto">
-
-        <div class="rb">
-          <div class="rl"><span>TITRE</span><button class="cbtn" onclick="pepsCopy('peps-out-title')">Copier</button></div>
-          <div class="rt" id="peps-out-title" style="font-size:13px;font-weight:500"></div>
-          <div style="font-size:10px;color:var(--mu);margin-top:4px" id="peps-title-len"></div>
+      <!-- Progress -->
+      <div id="peps-progress" style="display:none;flex-direction:column;gap:6px;flex:1;overflow-y:auto">
+        <div id="peps-progress-bar-wrap" style="background:var(--s2);border-radius:999px;height:4px;margin-bottom:8px;overflow:hidden">
+          <div id="peps-progress-bar" style="height:100%;background:var(--acc);border-radius:999px;width:0%;transition:width .3s"></div>
         </div>
+        <div id="peps-progress-list" style="display:flex;flex-direction:column;gap:4px"></div>
+      </div>
 
-        <div class="rb">
-          <div class="rl"><span>BULLET POINTS (1-10)</span><button class="cbtn" onclick="pepsCopy('peps-out-bullets')">Copier</button></div>
-          <div id="peps-out-bullets" style="display:flex;flex-direction:column;gap:4px;padding:8px 0"></div>
-        </div>
-
-        <div class="rb">
-          <div class="rl"><span>DESCRIPTION COURTE</span><button class="cbtn" onclick="pepsCopy('peps-out-desc-short')">Copier</button></div>
-          <div class="rt" id="peps-out-desc-short" style="font-size:12px;line-height:1.6"></div>
-        </div>
-
-        <div class="rb">
-          <div class="rl"><span>DESCRIPTION LONGUE</span><button class="cbtn" onclick="pepsCopy('peps-out-desc-long')">Copier</button></div>
-          <div class="rt" id="peps-out-desc-long" style="font-size:12px;line-height:1.6"></div>
-        </div>
-
-        <div class="rb">
-          <div class="rl"><span>MOTS-CLÉS BACKEND</span><button class="cbtn" onclick="pepsCopy('peps-out-keywords')">Copier</button></div>
-          <div class="rt" id="peps-out-keywords" style="font-size:11px;font-family:'DM Mono',monospace;line-height:1.6"></div>
-        </div>
-
+      <!-- Results cards -->
+      <div id="peps-results-list" style="display:none;flex-direction:column;gap:8px;flex:1;overflow-y:auto">
+        <!-- injected dynamically -->
       </div>
     </div>
 
-    <!-- Col 3: Export & Règles -->
+    <!-- Col 3: Stats & Règles -->
     <div class="panel" style="display:flex;flex-direction:column;gap:0">
-      <div class="ptitle">Export Excel</div>
+      <div class="ptitle">Statut</div>
 
-      <div class="card">
-        <div class="ch">ID Peps</div>
-        <div class="cs">À renseigner manuellement — récupéré depuis Peps</div>
-        <div class="fg">
-          <label class="fl">ID Peps produit *</label>
-          <input class="fi" id="peps-id" placeholder="ex: 63458">
-          <div style="font-size:10px;color:var(--mu);margin-top:3px">Pour les packs: préfixe p (ex: p152)</div>
+      <div id="peps-stats" style="display:none">
+        <div class="card">
+          <div class="ch">Résumé</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="peps-stats-grid"></div>
         </div>
-        <div class="fg">
-          <label class="fl">SKU parent *</label>
-          <input class="fi" id="peps-sku-parent" placeholder="ex: GOB30-PARENT">
-        </div>
-        <div class="fg">
-          <label class="fl">ASIN Amazon</label>
-          <input class="fi" id="peps-asin" placeholder="ex: B09XXXXXXX">
+        <div class="card" id="peps-warnings-card" style="display:none">
+          <div class="ch" style="color:var(--er)">⚠ Alertes</div>
+          <div id="peps-warnings-list" style="font-size:10px;color:var(--mu);line-height:1.8"></div>
         </div>
       </div>
 
       <div class="card">
-        <div class="ch">Options export</div>
-        <div class="fg">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px">
-            <input type="checkbox" id="peps-inactive" style="accent-color:var(--acc)">
-            Diffusion inactive (Inactif = oui)
-          </label>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="ch">Règles Peps</div>
-        <div style="font-size:10px;color:var(--mu);line-height:1.9;font-family:'DM Mono',monospace">
-          <div>✓ Titre → 200 chars max</div>
-          <div>✓ Marque vide → Sparklers Club</div>
+        <div class="ch">Règles Peps appliquées</div>
+        <div style="font-size:10px;color:var(--mu);line-height:2;font-family:'DM Mono',monospace">
+          <div>✓ Titre max 200 chars</div>
+          <div>✓ Marque en premier</div>
+          <div>✓ 10 bullets max, 200 chars</div>
+          <div>✓ Sans emoji, sans tiret long</div>
           <div>✓ EAN vide sur parent</div>
-          <div>✓ EAN obligatoire sur enfants</div>
-          <div>✓ Prix obligatoire sur enfants</div>
-          <div>✓ Visuels Peps = oui par défaut</div>
-          <div>✓ Thème variation → colonnes auto</div>
-          <div>✓ 10 bullet points max</div>
+          <div>✓ Marque vide → Sparklers Club</div>
+          <div>✓ Enfants : bullets/desc vides</div>
           <div>✓ Colonnes A→AZ template officiel</div>
+          <div>✓ Thème variation auto-détecté</div>
         </div>
       </div>
 
-      <div id="peps-export-btn-wrap" style="display:none;margin-top:auto">
-        <button class="btn btn-p" style="width:100%;justify-content:center" onclick="pepsExportXlsx()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 1v10M3 6l5 5 5-5"/><path d="M1 13h14"/></svg>
-          Télécharger le fichier Peps .xlsx
-        </button>
-        <div style="font-size:10px;color:var(--mu);margin-top:6px;text-align:center" id="peps-export-info"></div>
+      <div class="card">
+        <div class="ch">Format CSV variations</div>
+        <div style="font-size:10px;color:var(--mu);line-height:1.8">
+          Colonnes reconnues dans ton fichier :<br>
+          <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--acc)">SKU, EAN, Couleur, Taille, Quantité, Modèle, Style, Motif, Prix de vente TTC, Prix minimum TTC</span>
+        </div>
       </div>
 
-      <div class="ibox" style="margin-top:10px">
-        💡 L'ID Peps est récupéré dans ton back-office Peps après avoir créé le produit. Le SKU parent doit être unique dans ta boutique.
+      <div class="ibox" style="margin-top:auto">
+        💡 Les lignes enfants héritent du parent mais leurs bullets et descriptions restent vides — règle Amazon pour les variations.
       </div>
     </div>
 
@@ -1207,336 +1118,284 @@ let selectedSlots = new Set([0,1,2,3,4,5,6]);
 
 // ============ PEPS MODULE ============
 
-let pepsData = null; // generated content
-let pepsCsvRows = []; // parsed CSV variations
+const PEPS_HEADERS = [
+  'ID Peps','SKU','Variation','Parent SKU','EAN','Titre','Marque','Type de produit','ASIN Amazon',
+  'Bullet point 1','Bullet point 2','Bullet point 3','Bullet point 4','Bullet point 5',
+  'Bullet point 6','Bullet point 7','Bullet point 8','Bullet point 9','Bullet point 10',
+  'Thème de variation','Couleur','Taille','Modèle','Style','Thème','Motif',
+  "Pays d'origine",'Matériau',"Type d'article",'Quantité','Unité de la quantité',
+  'Quantité par lot',"Nombre d'articles",'Public cible 1','Public cible 2',
+  "Type d'occasion 1","Type d'occasion 2","Type d'occasion 3","Type d'occasion 4",
+  'Mots-clés de recherche','Mots-clés backend','Description courte','Description longue',
+  'Visuels Peps','Image URL 1','Image URL 2','Image URL 3',
+  'Prix de vente TTC','Prix minimum TTC','Frais de livraison TTC','Délai de livraison','Inactif'
+];
 
-// CSV handling
-function pepsHandleCsvDrop(e) {
+let pepsRows = []; // raw parsed rows [{col:val}]
+let pepsEnriched = []; // enriched rows
+let pepsFileData = null; // original file for re-injection
+
+function pepsDropFile(e) {
   e.preventDefault();
   e.currentTarget.style.borderColor = 'var(--b2)';
   const file = e.dataTransfer.files[0];
-  if (file) pepsLoadCsv(file);
+  if (file) pepsLoadFile(file);
 }
 
-function pepsLoadCsv(file) {
+function pepsLoadFile(file) {
+  if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    const text = e.target.result;
-    const lines = text.trim().split('\n').map(l => l.split(/[,;]\t?/));
-    const sep = text.includes(';') ? ';' : ',';
-    const rows = text.trim().split('\n').map(l => l.split(sep).map(c => c.trim().replace(/^"|"$/g,'')));
-    const headers = rows[0].map(h => h.toLowerCase().trim());
-    pepsCsvRows = rows.slice(1).filter(r => r.some(c => c)).map(r => {
+    pepsFileData = e.target.result;
+    // Parse as TSV/CSV (template exports as tab-separated)
+    const text = typeof pepsFileData === 'string' ? pepsFileData : new TextDecoder().decode(pepsFileData);
+    const sep = text.includes('\t') ? '\t' : ';';
+    const lines = text.trim().split('\n').filter(l => l.trim());
+    const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g,'').replace(/\uFEFF/g,''));
+
+    pepsRows = lines.slice(1).filter(l => l.trim()).map(line => {
+      const vals = line.split(sep).map(v => v.trim().replace(/^"|"$/g,''));
       const obj = {};
-      headers.forEach((h, i) => obj[h] = r[i] || '');
+      headers.forEach((h,i) => obj[h] = vals[i] || '');
       return obj;
-    });
-    document.getElementById('peps-csv-drop').style.display = 'none';
-    document.getElementById('peps-csv-preview').style.display = '';
-    document.getElementById('peps-csv-info').textContent = `${pepsCsvRows.length} variations importées — colonnes: ${headers.join(', ')}`;
-    document.getElementById('peps-csv-rows').innerHTML = pepsCsvRows.slice(0,5).map(r =>
-      Object.entries(r).map(([k,v]) => `<span style="color:var(--acc)">${k}</span>: ${v}`).join(' · ')
-    ).join('<br>');
+    }).filter(r => r['SKU'] || r['ID Peps']);
+
+    // Show file loaded state
+    document.getElementById('peps-drop-placeholder').style.display = 'none';
+    document.getElementById('peps-drop-loaded').style.display = '';
+    document.getElementById('peps-file-name').textContent = file.name;
+
+    // Count parents and children
+    const parents = pepsRows.filter(r => !r['Variation'] || r['Variation'].toLowerCase() === 'parent');
+    const children = pepsRows.filter(r => r['Variation'].toLowerCase() === 'enfant');
+    document.getElementById('peps-file-info').textContent =
+      `${pepsRows.length} lignes — ${parents.length} parent(s) — ${children.length} enfant(s)`;
+
+    // Show products list
+    document.getElementById('peps-parsed-preview').style.display = '';
+    document.getElementById('peps-products-list').innerHTML = parents.slice(0,10).map(r => `
+      <div style="font-size:10px;padding:5px 8px;background:var(--s2);border-radius:6px;border:1px solid var(--b1)">
+        <div style="font-weight:600;color:var(--txt)">${r['Titre'] || r['SKU'] || '—'}</div>
+        <div style="color:var(--mu);margin-top:2px">SKU: ${r['SKU']} · ID: ${r['ID Peps']||'—'} · ${r['Thème de variation']||'Simple'}</div>
+      </div>`).join('') + (parents.length > 10 ? `<div style="font-size:10px;color:var(--mu);padding:4px">...et ${parents.length-10} autres</div>` : '');
+
+    document.getElementById('peps-gen-btn').disabled = false;
+    document.getElementById('peps-gen-label').textContent = `Enrichir ${parents.length} fiche(s)`;
   };
-  reader.readAsText(file);
+
+  // Try reading as text first (CSV/TSV)
+  reader.readAsText(file, 'UTF-8');
 }
 
-function pepsClearCsv() {
-  pepsCsvRows = [];
-  document.getElementById('peps-csv-input').value = '';
-  document.getElementById('peps-csv-drop').style.display = '';
-  document.getElementById('peps-csv-preview').style.display = 'none';
-}
-
-// Toggle image URLs
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('peps-visuals')?.addEventListener('change', function() {
-    document.getElementById('peps-img-urls').style.display = this.value === '' ? '' : 'none';
-  });
-});
-
-function pepsCopy(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  navigator.clipboard.writeText(el.innerText || el.textContent).then(() => {
-    const btn = el.closest('.rb')?.querySelector('.cbtn');
-    if (btn) { const o=btn.textContent; btn.textContent='✅'; setTimeout(()=>btn.textContent=o,1500); }
-  });
-}
-
-// Main generation
-async function pepsGenerate() {
-  const name = document.getElementById('peps-name').value.trim();
-  const desc = document.getElementById('peps-desc-long').value.trim();
-  if (!name) { alert('Renseigne le nom du produit'); return; }
+async function pepsEnrich() {
+  if (!pepsRows.length) return;
   if (!S.apiKey) { alert('Clé Claude manquante dans Paramètres'); return; }
 
-  document.getElementById('peps-empty').style.display = 'none';
-  document.getElementById('peps-result').style.display = 'none';
-  document.getElementById('peps-loading').style.display = 'flex';
-  document.getElementById('peps-loading-txt').textContent = 'Claude génère le contenu Amazon...';
+  const rewriteTitle = document.getElementById('peps-rewrite-title').checked;
+  const rewriteBullets = document.getElementById('peps-rewrite-bullets').checked;
+  const rewriteDesc = document.getElementById('peps-rewrite-desc').checked;
+  const rewriteKeywords = document.getElementById('peps-rewrite-keywords').checked;
+  const defaultBrand = document.getElementById('peps-default-brand').value.trim() || 'Sparklers Club';
+  const directives = document.getElementById('peps-directives').value.trim();
+  const lang = document.getElementById('peps-lang').value;
 
-  const brand = document.getElementById('peps-brand').value.trim() || 'Sparklers Club';
-  const type = document.getElementById('peps-type').value.trim();
-  const origin = document.getElementById('peps-origin').value.trim();
-  const material = document.getElementById('peps-material').value.trim();
-  const occasions = document.getElementById('peps-occasions').value.trim();
-  const keywords = document.getElementById('peps-keywords').value.trim();
-  const target1 = document.getElementById('peps-target1').value.trim();
-  const target2 = document.getElementById('peps-target2').value.trim();
+  // Get parent rows only — enfants héritent, pas de génération de contenu
+  const parents = pepsRows.filter(r => !r['Variation'] || r['Variation'].toLowerCase() === 'parent' || r['Variation'] === '');
 
-  const systemPrompt = `Tu es un expert en fiches produit Amazon France pour la marketplace. Tu génères du contenu optimisé pour Peps (plateforme de diffusion marketplace).
+  // Show progress UI
+  document.getElementById('peps-result-empty').style.display = 'none';
+  document.getElementById('peps-progress').style.display = 'flex';
+  document.getElementById('peps-results-list').style.display = 'none';
+  document.getElementById('peps-gen-btn').disabled = true;
+
+  const progressList = document.getElementById('peps-progress-list');
+  progressList.innerHTML = parents.map((r,i) => `
+    <div id="peps-prog-${i}" style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--b1)">
+      <div id="peps-prog-dot-${i}" style="font-size:12px;flex-shrink:0">○</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r['Titre']||r['SKU']||'Produit '+(i+1)}</div>
+        <div style="font-size:9px;color:var(--mu);font-family:'DM Mono',monospace" id="peps-prog-sub-${i}">En attente</div>
+      </div>
+    </div>`).join('');
+
+  pepsEnriched = [...pepsRows]; // start with original data
+  const warnings = [];
+
+  const systemPrompt = `Tu es un expert en fiches produit Amazon France. Tu enrichis des fiches pour la plateforme Peps (diffusion marketplace).
 
 RÈGLES ABSOLUES:
-- Titre: commence obligatoirement par la marque, max 200 caractères, pas de tirets longs (– —)
-- Bullets: SANS emoji, max 200 caractères chacun, pas de tirets longs, informatifs et vendeurs
-- Générer exactement 10 bullet points
-- Description courte: 1-2 phrases percutantes, max 500 chars
-- Description longue: 3-4 paragraphes HTML-friendly, SEO, max 2000 chars
-- Mots-clés backend: liste de mots-clés séparés par des virgules, sans répéter le titre
-- Tout en FRANÇAIS
-- Pas de tirets longs (– —), utiliser le tiret court (-) si nécessaire
-- Pour les produits éco/France: mettre "Fabriqué en France" en avant si applicable
-- Amazon F1 uniquement pour les catégories pyrotechnie
+- Titre: marque en PREMIER, max 200 caractères, pas de tirets longs (– —), optimisé SEO Amazon
+- Bullets: SANS emoji, max 200 caractères chacun, pas de tirets longs, 10 bullets exactement
+- Description courte: 1-2 phrases percutantes, max 500 caractères
+- Description longue: 3-4 paragraphes, persuasif, SEO, max 2000 caractères
+- Mots-clés backend: liste séparée par virgules, sans répéter le titre
+- Tout en ${lang === 'fr' ? 'FRANÇAIS' : 'ANGLAIS'}
+- Marque si vide = ${defaultBrand}
+${directives ? '- DIRECTIVES SUPPLÉMENTAIRES: ' + directives : ''}
 
-Retourne UNIQUEMENT un JSON valide, sans markdown, sans backticks:
+Retourne UNIQUEMENT du JSON valide, sans markdown:
 {
   "titre": "...",
-  "bullets": ["bullet1","bullet2","bullet3","bullet4","bullet5","bullet6","bullet7","bullet8","bullet9","bullet10"],
+  "marque": "...",
+  "bullets": ["...x10"],
   "description_courte": "...",
   "description_longue": "...",
-  "mots_cles_backend": "...",
-  "mots_cles_recherche": "..."
+  "mots_cles_recherche": "...",
+  "mots_cles_backend": "..."
 }`;
 
-  const userPrompt = `Génère une fiche produit Amazon complète pour:
-Nom: ${name}
+  for (let i = 0; i < parents.length; i++) {
+    const parent = parents[i];
+    const dot = document.getElementById(`peps-prog-dot-${i}`);
+    const sub = document.getElementById(`peps-prog-sub-${i}`);
+    dot.textContent = '◉'; dot.style.color = 'var(--acc)';
+    sub.textContent = 'Génération Claude...';
+
+    // Progress bar
+    document.getElementById('peps-progress-bar').style.width = `${Math.round(i/parents.length*100)}%`;
+
+    // Build context from existing row data
+    const existingTitle = parent['Titre'] || '';
+    const existingBullets = [1,2,3,4,5,6,7,8,9,10].map(n => parent[`Bullet point ${n}`]).filter(Boolean);
+    const existingDesc = parent['Description longue'] || parent['Description courte'] || '';
+    const material = parent['Matériau'] || '';
+    const origin = parent["Pays d'origine"] || '';
+    const occasions = [1,2,3,4].map(n => parent[`Type d'occasion ${n}`]).filter(Boolean).join(', ');
+    const brand = parent['Marque'] || defaultBrand;
+    const sku = parent['SKU'] || '';
+
+    // Find children to get variation info
+    const children = pepsRows.filter(r =>
+      r['Variation']?.toLowerCase() === 'enfant' && r['Parent SKU'] === sku
+    );
+    const variationInfo = children.length > 0 ?
+      `Variations disponibles: ${children.map(c => [c['Couleur'],c['Taille'],c['Quantité']].filter(Boolean).join('/')).join(', ')}` : '';
+
+    const userPrompt = `Enrichis cette fiche produit Amazon:
+SKU: ${sku}
 Marque: ${brand}
-${type ? 'Type: '+type : ''}
-${origin ? 'Origine: '+origin : ''}
-${material ? 'Matériau: '+material : ''}
-${target1||target2 ? 'Public: '+(target1+' '+target2).trim() : ''}
-${occasions ? 'Occasions: '+occasions : ''}
-${keywords ? 'Mots-clés fournis: '+keywords : ''}
-${desc ? 'Description source:\n'+desc.substring(0,1500) : ''}`;
+${existingTitle ? 'Titre actuel: ' + existingTitle : ''}
+${material ? 'Matériau: ' + material : ''}
+${origin ? 'Origine: ' + origin : ''}
+${occasions ? 'Occasions: ' + occasions : ''}
+${variationInfo}
+${existingBullets.length ? 'Bullets existants:\n' + existingBullets.map((b,i)=>`${i+1}. ${b}`).join('\n') : ''}
+${existingDesc ? 'Description existante:\n' + existingDesc.substring(0,800) : ''}
 
-  try {
-    const res = await fetch(`${PROXY.anthropic}/v1/messages`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 3000, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
-    });
-    const data = await res.json();
-    const raw = (data.content?.[0]?.text || '').replace(/```json|```/g,'').trim();
-    pepsData = JSON.parse(raw);
+${!existingTitle && !existingDesc ? 'ATTENTION: peu d\'informations disponibles — génère le meilleur contenu possible depuis le SKU et la marque.' : ''}`;
 
-    // Display results
-    const titleEl = document.getElementById('peps-out-title');
-    titleEl.textContent = pepsData.titre || '';
-    const titleLen = (pepsData.titre||'').length;
-    document.getElementById('peps-title-len').textContent = `${titleLen}/200 caractères${titleLen > 200 ? ' ⚠️ TROP LONG' : ''}`;
-    titleEl.style.color = titleLen > 200 ? 'var(--er)' : '';
+    try {
+      const res = await fetch(`${PROXY.anthropic}/v1/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+          system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
+      });
+      const data = await res.json();
+      const raw = (data.content?.[0]?.text || '').replace(/```json|```/g,'').trim();
+      const gen = JSON.parse(raw);
 
-    const bulletsEl = document.getElementById('peps-out-bullets');
-    bulletsEl.innerHTML = (pepsData.bullets||[]).map((b,i) => {
-      const len = b.length;
-      const over = len > 200;
-      return `<div style="font-size:11px;padding:4px 6px;border-radius:4px;background:var(--s1);display:flex;gap:6px;align-items:flex-start">
-        <span style="color:var(--acc);font-weight:700;flex-shrink:0;font-family:'DM Mono',monospace;font-size:10px">${i+1}</span>
-        <span style="flex:1;${over?'color:var(--er)':''}">${b}</span>
-        <span style="font-size:9px;color:${over?'var(--er)':'var(--mu2)'};flex-shrink:0">${len}</span>
-      </div>`;
-    }).join('');
+      // Find and update this parent in pepsEnriched
+      const rowIdx = pepsEnriched.findIndex(r => r['SKU'] === sku && (!r['Variation'] || r['Variation'].toLowerCase() !== 'enfant'));
+      if (rowIdx >= 0) {
+        const row = pepsEnriched[rowIdx];
+        if (rewriteTitle) row['Titre'] = (gen.titre || '').substring(0, 200);
+        if (!row['Marque']) row['Marque'] = gen.marque || defaultBrand;
+        if (rewriteBullets) {
+          (gen.bullets || []).forEach((b, bi) => { row[`Bullet point ${bi+1}`] = b.substring(0,200); });
+          // Clear bullets 1-10 that weren't filled
+          for (let n = (gen.bullets||[]).length+1; n <= 10; n++) row[`Bullet point ${n}`] = '';
+        }
+        if (rewriteDesc) {
+          row['Description courte'] = gen.description_courte || '';
+          row['Description longue'] = gen.description_longue || '';
+        }
+        if (rewriteKeywords) {
+          row['Mots-clés de recherche'] = gen.mots_cles_recherche || '';
+          row['Mots-clés backend'] = gen.mots_cles_backend || '';
+        }
+        pepsEnriched[rowIdx] = row;
+      }
 
-    document.getElementById('peps-out-desc-short').textContent = pepsData.description_courte || '';
-    document.getElementById('peps-out-desc-long').textContent = pepsData.description_longue || '';
-    document.getElementById('peps-out-keywords').textContent = pepsData.mots_cles_backend || '';
+      // Warnings
+      const titleLen = (gen.titre||'').length;
+      if (titleLen > 200) warnings.push(`SKU ${sku}: titre ${titleLen} chars (max 200)`);
+      (gen.bullets||[]).forEach((b,bi) => { if(b.length>200) warnings.push(`SKU ${sku}: bullet ${bi+1} trop long`); });
 
-    document.getElementById('peps-loading').style.display = 'none';
-    document.getElementById('peps-result').style.display = 'flex';
-    document.getElementById('peps-export-btn-wrap').style.display = '';
+      dot.textContent = '✓'; dot.style.color = 'var(--ok)';
+      sub.textContent = `${titleLen}/200 chars · ${(gen.bullets||[]).length} bullets`;
 
-    const varCount = pepsCsvRows.length;
-    document.getElementById('peps-export-info').textContent =
-      varCount > 0 ? `1 parent + ${varCount} enfants = ${1+varCount} lignes` : '1 produit simple';
+    } catch(e) {
+      dot.textContent = '✗'; dot.style.color = 'var(--er)';
+      sub.textContent = 'Erreur: ' + e.message.substring(0,50);
+      warnings.push(`SKU ${sku}: erreur — ${e.message.substring(0,60)}`);
+    }
 
-  } catch(e) {
-    document.getElementById('peps-loading').style.display = 'none';
-    document.getElementById('peps-empty').style.display = 'flex';
-    alert('Erreur: ' + e.message);
+    if (i < parents.length-1) await new Promise(r => setTimeout(r, 800));
   }
+
+  // Done
+  document.getElementById('peps-progress-bar').style.width = '100%';
+
+  // Show stats
+  document.getElementById('peps-stats').style.display = '';
+  document.getElementById('peps-stats-grid').innerHTML = `
+    <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
+      <div style="font-size:20px;font-weight:700;color:var(--acc)">${parents.length}</div>
+      <div style="font-size:10px;color:var(--mu)">parents enrichis</div>
+    </div>
+    <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
+      <div style="font-size:20px;font-weight:700;color:var(--txt)">${pepsEnriched.filter(r=>r['Variation']?.toLowerCase()==='enfant').length}</div>
+      <div style="font-size:10px;color:var(--mu)">enfants</div>
+    </div>
+    <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
+      <div style="font-size:20px;font-weight:700;color:var(--txt)">${pepsEnriched.length}</div>
+      <div style="font-size:10px;color:var(--mu)">lignes total</div>
+    </div>
+    <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
+      <div style="font-size:20px;font-weight:700;color:${warnings.length?'var(--er)':'var(--ok)'}">${warnings.length}</div>
+      <div style="font-size:10px;color:var(--mu)">alertes</div>
+    </div>`;
+
+  if (warnings.length) {
+    document.getElementById('peps-warnings-card').style.display = '';
+    document.getElementById('peps-warnings-list').innerHTML = warnings.map(w => `⚠ ${w}`).join('<br>');
+  }
+
+  document.getElementById('peps-dl-btn').style.display = '';
+  document.getElementById('peps-gen-btn').disabled = false;
 }
 
-// Excel export
-async function pepsExportXlsx() {
-  if (!pepsData) { alert('Génère d\'abord le contenu'); return; }
+function pepsExport() {
+  if (!pepsEnriched.length) return;
 
-  const pepsId = document.getElementById('peps-id').value.trim();
-  const skuParent = document.getElementById('peps-sku-parent').value.trim();
-  const asin = document.getElementById('peps-asin').value.trim();
-  const brand = document.getElementById('peps-brand').value.trim() || 'Sparklers Club';
-  const varTheme = document.getElementById('peps-variation-theme').value;
-  const visuals = document.getElementById('peps-visuals').value;
-  const img1 = document.getElementById('peps-img1').value.trim();
-  const img2 = document.getElementById('peps-img2').value.trim();
-  const img3 = document.getElementById('peps-img3').value.trim();
-  const price = document.getElementById('peps-price').value.trim();
-  const priceMin = document.getElementById('peps-price-min').value.trim();
-  const shipping = document.getElementById('peps-shipping').value.trim();
-  const delivery = document.getElementById('peps-delivery').value.trim();
-  const inactive = document.getElementById('peps-inactive').checked ? 'oui' : '';
-  const origin = document.getElementById('peps-origin').value.trim();
-  const material = document.getElementById('peps-material').value.trim();
-  const type = document.getElementById('peps-type').value.trim();
-  const target1 = document.getElementById('peps-target1').value.trim();
-  const target2 = document.getElementById('peps-target2').value.trim();
-  const occasions = document.getElementById('peps-occasions').value.trim().split(',').map(o=>o.trim()).filter(Boolean);
-  const keywords = document.getElementById('peps-keywords').value.trim();
-  const name = document.getElementById('peps-name').value.trim();
+  // Build TSV with BOM — Excel compatible, template Peps officiel colonnes A→AZ
+  const lines = [
+    PEPS_HEADERS.join('\t'),
+    ...pepsEnriched.map(row =>
+      PEPS_HEADERS.map(h => {
+        let val = row[h] !== undefined ? String(row[h]) : '';
+        // Enforce rules
+        if (h === 'Titre') val = val.substring(0,200);
+        if (h.startsWith('Bullet point')) val = val.substring(0,200);
+        if (h === 'Marque' && !val) val = document.getElementById('peps-default-brand').value.trim() || 'Sparklers Club';
+        // Children: clear content fields
+        if (row['Variation']?.toLowerCase() === 'enfant') {
+          if (h.startsWith('Bullet point') || h === 'Description courte' || h === 'Description longue' ||
+              h === 'Mots-clés de recherche' || h === 'Mots-clés backend' || h === 'Thème de variation') val = '';
+        }
+        return val.includes('\t') || val.includes('"') ? '"'+val.replace(/"/g,'""')+'"' : val;
+      }).join('\t')
+    )
+  ].join('\r\n');
 
-  if (!pepsId) { alert('Renseigne l\'ID Peps'); return; }
-  if (!skuParent) { alert('Renseigne le SKU parent'); return; }
-
-  // Headers — colonnes A→AZ (52 colonnes)
-  const HEADERS = [
-    'ID Peps','SKU','Variation','Parent SKU','EAN','Titre','Marque','Type de produit','ASIN Amazon',
-    'Bullet point 1','Bullet point 2','Bullet point 3','Bullet point 4','Bullet point 5',
-    'Bullet point 6','Bullet point 7','Bullet point 8','Bullet point 9','Bullet point 10',
-    'Thème de variation','Couleur','Taille','Modèle','Style','Thème','Motif',
-    'Pays d\'origine','Matériau','Type d\'article','Quantité','Unité de la quantité',
-    'Quantité par lot','Nombre d\'articles','Public cible 1','Public cible 2',
-    'Type d\'occasion 1','Type d\'occasion 2','Type d\'occasion 3','Type d\'occasion 4',
-    'Mots-clés de recherche','Mots-clés backend','Description courte','Description longue',
-    'Visuels Peps','Image URL 1','Image URL 2','Image URL 3',
-    'Prix de vente TTC','Prix minimum TTC','Frais de livraison TTC','Délai de livraison','Inactif'
-  ];
-
-  const bullets = pepsData.bullets || [];
-  const titre = (pepsData.titre || name).substring(0, 200);
-
-  // Build base row (parent or simple)
-  const baseRow = {
-    'ID Peps': pepsId,
-    'SKU': skuParent,
-    'Variation': varTheme ? 'parent' : '',
-    'Parent SKU': '',
-    'EAN': '', // empty on parent
-    'Titre': titre,
-    'Marque': brand,
-    'Type de produit': type,
-    'ASIN Amazon': asin,
-    'Bullet point 1': bullets[0]||'',
-    'Bullet point 2': bullets[1]||'',
-    'Bullet point 3': bullets[2]||'',
-    'Bullet point 4': bullets[3]||'',
-    'Bullet point 5': bullets[4]||'',
-    'Bullet point 6': bullets[5]||'',
-    'Bullet point 7': bullets[6]||'',
-    'Bullet point 8': bullets[7]||'',
-    'Bullet point 9': bullets[8]||'',
-    'Bullet point 10': bullets[9]||'',
-    'Thème de variation': varTheme,
-    'Couleur': '',
-    'Taille': '',
-    'Modèle': '',
-    'Style': '',
-    'Thème': '',
-    'Motif': '',
-    'Pays d\'origine': origin,
-    'Matériau': material,
-    'Type d\'article': type,
-    'Quantité': '',
-    'Unité de la quantité': '',
-    'Quantité par lot': '',
-    'Nombre d\'articles': '',
-    'Public cible 1': target1,
-    'Public cible 2': target2,
-    'Type d\'occasion 1': occasions[0]||'',
-    'Type d\'occasion 2': occasions[1]||'',
-    'Type d\'occasion 3': occasions[2]||'',
-    'Type d\'occasion 4': occasions[3]||'',
-    'Mots-clés de recherche': pepsData.mots_cles_recherche || keywords,
-    'Mots-clés backend': pepsData.mots_cles_backend || '',
-    'Description courte': pepsData.description_courte || '',
-    'Description longue': pepsData.description_longue || '',
-    'Visuels Peps': varTheme ? '' : visuals,
-    'Image URL 1': varTheme ? '' : img1,
-    'Image URL 2': varTheme ? '' : img2,
-    'Image URL 3': varTheme ? '' : img3,
-    'Prix de vente TTC': varTheme ? '' : price,
-    'Prix minimum TTC': varTheme ? '' : priceMin,
-    'Frais de livraison TTC': varTheme ? '' : shipping,
-    'Délai de livraison': varTheme ? '' : delivery,
-    'Inactif': inactive,
-  };
-
-  const rows = [baseRow];
-
-  // Add child rows from CSV
-  if (varTheme && pepsCsvRows.length > 0) {
-    pepsCsvRows.forEach(csvRow => {
-      const child = { ...baseRow };
-      child['Variation'] = 'enfant';
-      child['Parent SKU'] = skuParent;
-      child['SKU'] = csvRow['sku'] || csvRow['SKU'] || '';
-      child['EAN'] = csvRow['ean'] || csvRow['EAN'] || '';
-      child['Thème de variation'] = '';
-      // Variation attributes from CSV
-      child['Couleur'] = csvRow['couleur'] || csvRow['color'] || csvRow['Couleur'] || '';
-      child['Taille'] = csvRow['taille'] || csvRow['size'] || csvRow['Taille'] || '';
-      child['Modèle'] = csvRow['modele'] || csvRow['Modèle'] || '';
-      child['Style'] = csvRow['style'] || csvRow['Style'] || '';
-      child['Motif'] = csvRow['motif'] || csvRow['Motif'] || '';
-      child['Quantité'] = csvRow['quantite'] || csvRow['quantité'] || csvRow['qty'] || csvRow['Quantité'] || '';
-      child['Unité de la quantité'] = csvRow['unite'] || csvRow['unité'] || csvRow['unit'] || '';
-      child['Quantité par lot'] = csvRow['quantite_par_lot'] || csvRow['lot'] || '';
-      child['Nombre d\'articles'] = csvRow['nombre_articles'] || csvRow['articles'] || '';
-      // Price per child
-      child['Prix de vente TTC'] = csvRow['prix'] || csvRow['price'] || csvRow['Prix'] || price;
-      child['Prix minimum TTC'] = csvRow['prix_min'] || priceMin;
-      child['Frais de livraison TTC'] = csvRow['livraison'] || shipping;
-      child['Délai de livraison'] = csvRow['delai'] || delivery;
-      child['Visuels Peps'] = visuals;
-      child['Image URL 1'] = csvRow['image1'] || csvRow['img1'] || img1;
-      child['Image URL 2'] = csvRow['image2'] || csvRow['img2'] || img2;
-      child['Image URL 3'] = csvRow['image3'] || csvRow['img3'] || img3;
-      child['Inactif'] = inactive;
-      // Clear parent-only fields
-      child['Bullet point 1'] = ''; child['Bullet point 2'] = ''; child['Bullet point 3'] = '';
-      child['Bullet point 4'] = ''; child['Bullet point 5'] = ''; child['Bullet point 6'] = '';
-      child['Bullet point 7'] = ''; child['Bullet point 8'] = ''; child['Bullet point 9'] = '';
-      child['Bullet point 10'] = '';
-      child['Description courte'] = ''; child['Description longue'] = '';
-      child['Mots-clés de recherche'] = ''; child['Mots-clés backend'] = '';
-      child['Type d\'occasion 1']=''; child['Type d\'occasion 2']=''; child['Type d\'occasion 3']=''; child['Type d\'occasion 4']='';
-      child['Public cible 1']=''; child['Public cible 2']='';
-      rows.push(child);
-    });
-  }
-
-  // Generate XLSX using SheetJS-style CSV → Excel via blob
-  // Build CSV string
-  const csvLines = [
-    HEADERS.join('\t'),
-    ...rows.map(row => HEADERS.map(h => {
-      const val = (row[h] !== undefined && row[h] !== null) ? String(row[h]) : '';
-      return val.includes('\t') || val.includes('"') ? '"' + val.replace(/"/g,'""') + '"' : val;
-    }).join('\t'))
-  ].join('\n');
-
-  // Create Excel-compatible TSV with BOM
-  const bom = '\uFEFF';
-  const blob = new Blob([bom + csvLines], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const blob = new Blob(['\uFEFF' + lines], { type: 'application/vnd.ms-excel;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  const safeName = (document.getElementById('peps-name').value||'produit').substring(0,30).replace(/[^a-zA-Z0-9]/g,'-');
-  a.download = `peps-import-${safeName}-${Date.now()}.xls`;
+  a.download = `peps-enrichi-${Date.now()}.xls`;
   a.click();
   URL.revokeObjectURL(url);
-
-  document.getElementById('peps-export-info').textContent =
-    `✓ Exporté — ${rows.length} ligne(s) : ${rows.filter(r=>r['Variation']==='parent'||!r['Variation']).length} parent + ${rows.filter(r=>r['Variation']==='enfant').length} enfants`;
 }
 
 const S = {
