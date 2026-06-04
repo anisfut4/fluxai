@@ -1058,9 +1058,10 @@ option{background:#1a1a23}
           <div>✓ Sans emoji, sans tiret long</div>
           <div>✓ EAN vide sur parent</div>
           <div>✓ Marque vide → Sparklers Club</div>
-          <div>✓ Enfants : bullets/desc vides</div>
+          <div>✓ Contenu unique par ligne</div>
+          <div>✓ Enfants : contenu adapté aux attributs</div>
           <div>✓ Colonnes A→AZ template officiel</div>
-          <div>✓ Thème variation auto-détecté</div>
+          <div>✓ Thème variation conservé</div>
         </div>
       </div>
 
@@ -1180,7 +1181,7 @@ function pepsLoadFile(file) {
       </div>`).join('') + (parents.length > 10 ? `<div style="font-size:10px;color:var(--mu);padding:4px">...et ${parents.length-10} autres</div>` : '');
 
     document.getElementById('peps-gen-btn').disabled = false;
-    document.getElementById('peps-gen-label').textContent = `Enrichir ${parents.length} fiche(s)`;
+    document.getElementById('peps-gen-label').textContent = `Enrichir ${pepsRows.length} ligne(s)`;
   };
 
   // Try reading as text first (CSV/TSV)
@@ -1191,98 +1192,122 @@ async function pepsEnrich() {
   if (!pepsRows.length) return;
   if (!S.apiKey) { alert('Clé Claude manquante dans Paramètres'); return; }
 
-  const rewriteTitle = document.getElementById('peps-rewrite-title').checked;
-  const rewriteBullets = document.getElementById('peps-rewrite-bullets').checked;
-  const rewriteDesc = document.getElementById('peps-rewrite-desc').checked;
+  const rewriteTitle    = document.getElementById('peps-rewrite-title').checked;
+  const rewriteBullets  = document.getElementById('peps-rewrite-bullets').checked;
+  const rewriteDesc     = document.getElementById('peps-rewrite-desc').checked;
   const rewriteKeywords = document.getElementById('peps-rewrite-keywords').checked;
-  const defaultBrand = document.getElementById('peps-default-brand').value.trim() || 'Sparklers Club';
-  const directives = document.getElementById('peps-directives').value.trim();
-  const lang = document.getElementById('peps-lang').value;
+  const defaultBrand    = document.getElementById('peps-default-brand').value.trim() || 'Sparklers Club';
+  const directives      = document.getElementById('peps-directives').value.trim();
+  const lang            = document.getElementById('peps-lang').value;
 
-  // Get parent rows only — enfants héritent, pas de génération de contenu
-  const parents = pepsRows.filter(r => !r['Variation'] || r['Variation'].toLowerCase() === 'parent' || r['Variation'] === '');
+  // ALL rows get unique content — parent + enfant
+  const allRows = pepsRows;
+  const total = allRows.length;
 
-  // Show progress UI
+  // UI setup
   document.getElementById('peps-result-empty').style.display = 'none';
   document.getElementById('peps-progress').style.display = 'flex';
   document.getElementById('peps-results-list').style.display = 'none';
   document.getElementById('peps-gen-btn').disabled = true;
 
   const progressList = document.getElementById('peps-progress-list');
-  progressList.innerHTML = parents.map((r,i) => `
-    <div id="peps-prog-${i}" style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--b1)">
-      <div id="peps-prog-dot-${i}" style="font-size:12px;flex-shrink:0">○</div>
+  progressList.innerHTML = allRows.map((r,i) => {
+    const isChild = r['Variation']?.toLowerCase() === 'enfant';
+    const label = r['Titre'] || r['SKU'] || `Ligne ${i+1}`;
+    const badge = isChild
+      ? `<span style="font-size:8px;background:rgba(245,200,64,.15);color:var(--acc);border-radius:3px;padding:1px 5px;border:1px solid rgba(245,200,64,.3)">enfant</span>`
+      : `<span style="font-size:8px;background:rgba(56,184,114,.15);color:var(--ok);border-radius:3px;padding:1px 5px;border:1px solid rgba(56,184,114,.3)">parent</span>`;
+    return `
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--b1)">
+      <div id="peps-prog-dot-${i}" style="font-size:12px;flex-shrink:0;color:var(--mu2)">○</div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r['Titre']||r['SKU']||'Produit '+(i+1)}</div>
+        <div style="display:flex;align-items:center;gap:5px">
+          ${badge}
+          <span style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}</span>
+        </div>
         <div style="font-size:9px;color:var(--mu);font-family:'DM Mono',monospace" id="peps-prog-sub-${i}">En attente</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
-  pepsEnriched = [...pepsRows]; // start with original data
+  pepsEnriched = allRows.map(r => ({...r}));
   const warnings = [];
 
   const systemPrompt = `Tu es un expert en fiches produit Amazon France. Tu enrichis des fiches pour la plateforme Peps (diffusion marketplace).
 
 RÈGLES ABSOLUES:
 - Titre: marque en PREMIER, max 200 caractères, pas de tirets longs (– —), optimisé SEO Amazon
-- Bullets: SANS emoji, max 200 caractères chacun, pas de tirets longs, 10 bullets exactement
+- Bullets: SANS emoji, max 200 caractères chacun, pas de tirets longs, exactement 10 bullets
 - Description courte: 1-2 phrases percutantes, max 500 caractères
 - Description longue: 3-4 paragraphes, persuasif, SEO, max 2000 caractères
 - Mots-clés backend: liste séparée par virgules, sans répéter le titre
 - Tout en ${lang === 'fr' ? 'FRANÇAIS' : 'ANGLAIS'}
 - Marque si vide = ${defaultBrand}
-${directives ? '- DIRECTIVES SUPPLÉMENTAIRES: ' + directives : ''}
+- Pour les variations enfants: adapte titre, bullets et descriptions aux attributs spécifiques (quantité, couleur, taille) — contenu UNIQUE et différencié du parent
+${directives ? '- DIRECTIVES: ' + directives : ''}
 
 Retourne UNIQUEMENT du JSON valide, sans markdown:
-{
-  "titre": "...",
-  "marque": "...",
-  "bullets": ["...x10"],
-  "description_courte": "...",
-  "description_longue": "...",
-  "mots_cles_recherche": "...",
-  "mots_cles_backend": "..."
-}`;
+{"titre":"...","marque":"...","bullets":["...x10"],"description_courte":"...","description_longue":"...","mots_cles_recherche":"...","mots_cles_backend":"..."}`;
 
-  for (let i = 0; i < parents.length; i++) {
-    const parent = parents[i];
+  for (let i = 0; i < total; i++) {
+    const row = allRows[i];
     const dot = document.getElementById(`peps-prog-dot-${i}`);
     const sub = document.getElementById(`peps-prog-sub-${i}`);
     dot.textContent = '◉'; dot.style.color = 'var(--acc)';
-    sub.textContent = 'Génération Claude...';
+    sub.textContent = 'Claude génère...';
+    document.getElementById('peps-progress-bar').style.width = `${Math.round(i/total*100)}%`;
 
-    // Progress bar
-    document.getElementById('peps-progress-bar').style.width = `${Math.round(i/parents.length*100)}%`;
+    const sku      = row['SKU'] || '';
+    const brand    = row['Marque'] || defaultBrand;
+    const isChild  = row['Variation']?.toLowerCase() === 'enfant';
+    const parentSku = row['Parent SKU'] || '';
 
-    // Build context from existing row data
-    const existingTitle = parent['Titre'] || '';
-    const existingBullets = [1,2,3,4,5,6,7,8,9,10].map(n => parent[`Bullet point ${n}`]).filter(Boolean);
-    const existingDesc = parent['Description longue'] || parent['Description courte'] || '';
-    const material = parent['Matériau'] || '';
-    const origin = parent["Pays d'origine"] || '';
-    const occasions = [1,2,3,4].map(n => parent[`Type d'occasion ${n}`]).filter(Boolean).join(', ');
-    const brand = parent['Marque'] || defaultBrand;
-    const sku = parent['SKU'] || '';
+    // Get parent row for context if this is a child
+    const parentRow = isChild ? pepsRows.find(r => r['SKU'] === parentSku) : null;
 
-    // Find children to get variation info
-    const children = pepsRows.filter(r =>
-      r['Variation']?.toLowerCase() === 'enfant' && r['Parent SKU'] === sku
-    );
-    const variationInfo = children.length > 0 ?
-      `Variations disponibles: ${children.map(c => [c['Couleur'],c['Taille'],c['Quantité']].filter(Boolean).join('/')).join(', ')}` : '';
+    // Build variation attributes for this specific row
+    const couleur   = row['Couleur'] || '';
+    const taille    = row['Taille'] || '';
+    const quantite  = row['Quantité'] || '';
+    const modele    = row['Modèle'] || '';
+    const style     = row['Style'] || '';
+    const motif     = row['Motif'] || '';
+    const nbrArticles = row["Nombre d'articles"] || '';
+    const qtyLot    = row['Quantité par lot'] || '';
+    const varAttrs  = [
+      couleur  ? `Couleur: ${couleur}` : '',
+      taille   ? `Taille: ${taille}` : '',
+      quantite ? `Quantité: ${quantite} ${row['Unité de la quantité']||''}`.trim() : '',
+      modele   ? `Modèle: ${modele}` : '',
+      style    ? `Style: ${style}` : '',
+      motif    ? `Motif: ${motif}` : '',
+      nbrArticles ? `Nombre d'articles: ${nbrArticles}` : '',
+      qtyLot   ? `Quantité par lot: ${qtyLot}` : '',
+    ].filter(Boolean).join('\n');
 
-    const userPrompt = `Enrichis cette fiche produit Amazon:
+    const existingTitle   = row['Titre'] || (parentRow ? parentRow['Titre'] : '');
+    const existingBullets = [1,2,3,4,5,6,7,8,9,10].map(n => row[`Bullet point ${n}`] || (parentRow ? parentRow[`Bullet point ${n}`] : '')).filter(Boolean);
+    const existingDesc    = row['Description longue'] || row['Description courte'] || (parentRow ? (parentRow['Description longue']||'') : '');
+    const material  = row['Matériau'] || (parentRow?.['Matériau'] || '');
+    const origin    = row["Pays d'origine"] || (parentRow?.["Pays d'origine"] || '');
+    const occasions = [1,2,3,4].map(n => row[`Type d'occasion ${n}`] || (parentRow?.[`Type d'occasion ${n}`] || '')).filter(Boolean).join(', ');
+    const price     = row['Prix de vente TTC'] || '';
+
+    const userPrompt = `Génère un contenu Amazon UNIQUE et SPÉCIFIQUE pour cette ${isChild ? 'variation enfant' : 'fiche parent'}:
+
 SKU: ${sku}
 Marque: ${brand}
-${existingTitle ? 'Titre actuel: ' + existingTitle : ''}
-${material ? 'Matériau: ' + material : ''}
-${origin ? 'Origine: ' + origin : ''}
-${occasions ? 'Occasions: ' + occasions : ''}
-${variationInfo}
-${existingBullets.length ? 'Bullets existants:\n' + existingBullets.map((b,i)=>`${i+1}. ${b}`).join('\n') : ''}
-${existingDesc ? 'Description existante:\n' + existingDesc.substring(0,800) : ''}
+${isChild ? `VARIATION ENFANT du parent: ${parentSku}` : 'FICHE PARENT'}
+${varAttrs ? `Attributs spécifiques de cette ligne:\n${varAttrs}` : ''}
+${price ? `Prix: ${price}€` : ''}
+${material ? `Matériau: ${material}` : ''}
+${origin ? `Origine: ${origin}` : ''}
+${occasions ? `Occasions: ${occasions}` : ''}
+${existingTitle ? `Titre actuel: ${existingTitle}` : ''}
+${existingBullets.length ? `Bullets existants:\n${existingBullets.map((b,j)=>`${j+1}. ${b}`).join('\n')}` : ''}
+${existingDesc ? `Description existante:\n${existingDesc.substring(0,600)}` : ''}
 
-${!existingTitle && !existingDesc ? 'ATTENTION: peu d\'informations disponibles — génère le meilleur contenu possible depuis le SKU et la marque.' : ''}`;
+${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique (${varAttrs.replace(/\n/g,' · ')}). Adapte le titre, les bullets et la description pour mettre en avant ces attributs spécifiques. Le contenu doit être DIFFÉRENT du parent.` : ''}`;
 
     try {
       const res = await fetch(`${PROXY.anthropic}/v1/messages`, {
@@ -1292,64 +1317,59 @@ ${!existingTitle && !existingDesc ? 'ATTENTION: peu d\'informations disponibles 
           system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
       });
       const data = await res.json();
-      const raw = (data.content?.[0]?.text || '').replace(/```json|```/g,'').trim();
-      const gen = JSON.parse(raw);
+      const raw  = (data.content?.[0]?.text || '').replace(/```json|```/g,'').trim();
+      const gen  = JSON.parse(raw);
 
-      // Find and update this parent in pepsEnriched
-      const rowIdx = pepsEnriched.findIndex(r => r['SKU'] === sku && (!r['Variation'] || r['Variation'].toLowerCase() !== 'enfant'));
-      if (rowIdx >= 0) {
-        const row = pepsEnriched[rowIdx];
-        if (rewriteTitle) row['Titre'] = (gen.titre || '').substring(0, 200);
-        if (!row['Marque']) row['Marque'] = gen.marque || defaultBrand;
-        if (rewriteBullets) {
-          (gen.bullets || []).forEach((b, bi) => { row[`Bullet point ${bi+1}`] = b.substring(0,200); });
-          // Clear bullets 1-10 that weren't filled
-          for (let n = (gen.bullets||[]).length+1; n <= 10; n++) row[`Bullet point ${n}`] = '';
-        }
-        if (rewriteDesc) {
-          row['Description courte'] = gen.description_courte || '';
-          row['Description longue'] = gen.description_longue || '';
-        }
-        if (rewriteKeywords) {
-          row['Mots-clés de recherche'] = gen.mots_cles_recherche || '';
-          row['Mots-clés backend'] = gen.mots_cles_backend || '';
-        }
-        pepsEnriched[rowIdx] = row;
+      const enriched = pepsEnriched[i];
+      if (rewriteTitle)    enriched['Titre'] = (gen.titre || '').substring(0, 200);
+      if (!enriched['Marque']) enriched['Marque'] = gen.marque || defaultBrand;
+      if (rewriteBullets) {
+        (gen.bullets || []).forEach((b, bi) => { enriched[`Bullet point ${bi+1}`] = b.substring(0,200); });
+        for (let n = (gen.bullets||[]).length+1; n <= 10; n++) enriched[`Bullet point ${n}`] = '';
+      }
+      if (rewriteDesc) {
+        enriched['Description courte'] = gen.description_courte || '';
+        enriched['Description longue'] = gen.description_longue || '';
+      }
+      if (rewriteKeywords) {
+        enriched['Mots-clés de recherche'] = gen.mots_cles_recherche || '';
+        enriched['Mots-clés backend']      = gen.mots_cles_backend || '';
       }
 
-      // Warnings
       const titleLen = (gen.titre||'').length;
-      if (titleLen > 200) warnings.push(`SKU ${sku}: titre ${titleLen} chars (max 200)`);
+      if (titleLen > 200) warnings.push(`SKU ${sku}: titre ${titleLen} chars`);
       (gen.bullets||[]).forEach((b,bi) => { if(b.length>200) warnings.push(`SKU ${sku}: bullet ${bi+1} trop long`); });
 
       dot.textContent = '✓'; dot.style.color = 'var(--ok)';
-      sub.textContent = `${titleLen}/200 chars · ${(gen.bullets||[]).length} bullets`;
+      sub.textContent = `${titleLen}/200 · ${(gen.bullets||[]).length} bullets${isChild && varAttrs ? ' · '+varAttrs.split('\n')[0] : ''}`;
 
     } catch(e) {
       dot.textContent = '✗'; dot.style.color = 'var(--er)';
       sub.textContent = 'Erreur: ' + e.message.substring(0,50);
-      warnings.push(`SKU ${sku}: erreur — ${e.message.substring(0,60)}`);
+      warnings.push(`SKU ${sku}: ${e.message.substring(0,60)}`);
     }
 
-    if (i < parents.length-1) await new Promise(r => setTimeout(r, 800));
+    // Small delay between calls
+    if (i < total-1) await new Promise(r => setTimeout(r, 700));
   }
 
-  // Done
   document.getElementById('peps-progress-bar').style.width = '100%';
 
-  // Show stats
+  // Stats
   document.getElementById('peps-stats').style.display = '';
+  const nParents  = pepsEnriched.filter(r => !r['Variation'] || r['Variation'].toLowerCase() !== 'enfant').length;
+  const nChildren = pepsEnriched.filter(r => r['Variation']?.toLowerCase() === 'enfant').length;
   document.getElementById('peps-stats-grid').innerHTML = `
     <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
-      <div style="font-size:20px;font-weight:700;color:var(--acc)">${parents.length}</div>
-      <div style="font-size:10px;color:var(--mu)">parents enrichis</div>
+      <div style="font-size:20px;font-weight:700;color:var(--ok)">${nParents}</div>
+      <div style="font-size:10px;color:var(--mu)">parents</div>
     </div>
     <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
-      <div style="font-size:20px;font-weight:700;color:var(--txt)">${pepsEnriched.filter(r=>r['Variation']?.toLowerCase()==='enfant').length}</div>
+      <div style="font-size:20px;font-weight:700;color:var(--acc)">${nChildren}</div>
       <div style="font-size:10px;color:var(--mu)">enfants</div>
     </div>
     <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
-      <div style="font-size:20px;font-weight:700;color:var(--txt)">${pepsEnriched.length}</div>
+      <div style="font-size:20px;font-weight:700;color:var(--txt)">${total}</div>
       <div style="font-size:10px;color:var(--mu)">lignes total</div>
     </div>
     <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
@@ -1379,11 +1399,6 @@ function pepsExport() {
         if (h === 'Titre') val = val.substring(0,200);
         if (h.startsWith('Bullet point')) val = val.substring(0,200);
         if (h === 'Marque' && !val) val = document.getElementById('peps-default-brand').value.trim() || 'Sparklers Club';
-        // Children: clear content fields
-        if (row['Variation']?.toLowerCase() === 'enfant') {
-          if (h.startsWith('Bullet point') || h === 'Description courte' || h === 'Description longue' ||
-              h === 'Mots-clés de recherche' || h === 'Mots-clés backend' || h === 'Thème de variation') val = '';
-        }
         return val.includes('\t') || val.includes('"') ? '"'+val.replace(/"/g,'""')+'"' : val;
       }).join('\t')
     )
