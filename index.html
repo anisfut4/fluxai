@@ -1357,7 +1357,7 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
         const res = await fetch(`${PROXY.anthropic}/v1/messages`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
-          body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+          body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 3000,
             system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
         });
 
@@ -1369,7 +1369,14 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
         const data = await res.json();
         const raw  = (data.content?.[0]?.text || '').replace(/```json|```/g,'').trim();
         if (!raw) throw new Error('Réponse Claude vide');
-        const gen  = JSON.parse(raw);
+        let gen;
+        try {
+          gen = JSON.parse(raw);
+        } catch(parseErr) {
+          console.error('Peps JSON parse failed. Raw response:', raw);
+          console.error('Stop reason:', data.stop_reason);
+          throw new Error(`Parse échoué (stop_reason: ${data.stop_reason}) — réponse tronquée probablement`);
+        }
 
         const enriched = pepsEnriched[i];
         if (rewriteTitle)    enriched['Titre'] = (gen.titre || '').substring(0, 200);
