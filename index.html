@@ -1276,7 +1276,7 @@ RÈGLES ABSOLUES:
 - Bullets: SANS emoji, max 200 caractères chacun, pas de tirets longs, EXACTEMENT 6 bullets — chacun dense, percutant, optimisé à fond (argument fort + bénéfice client + mot-clé SEO dans chaque bullet, zéro remplissage)
 - Description courte: 1-2 phrases percutantes, max 500 caractères
 - Description longue: 3-4 paragraphes, persuasif, SEO, max 2000 caractères
-- Mots-clés backend: liste séparée par virgules, sans répéter le titre
+- Mots-clés backend: liste séparée par virgules, sans répéter le titre, MAXIMUM 100 caractères au total
 - Tout en ${lang === 'fr' ? 'FRANÇAIS' : 'ANGLAIS'}
 - Marque si vide = ${defaultBrand}
 - Pour les variations enfants: adapte titre, bullets et descriptions aux attributs spécifiques (quantité, couleur, taille) — contenu UNIQUE et différencié du parent
@@ -1389,7 +1389,7 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
         }
         if (rewriteKeywords) {
           enriched['Mots-clés de recherche'] = gen.mots_cles_recherche || '';
-          enriched['Mots-clés backend']      = gen.mots_cles_backend || '';
+          enriched['Mots-clés backend']      = (gen.mots_cles_backend || '').substring(0,100);
         }
 
         const titleLen = (gen.titre||'').length;
@@ -1469,6 +1469,7 @@ function pepsExport() {
       let val = row[h] !== undefined ? String(row[h]) : '';
       if (h === 'Titre') val = val.substring(0,200);
       if (h.startsWith('Bullet point')) val = val.substring(0,200);
+      if (h === 'Mots-clés backend') val = val.substring(0,100);
       if (h === 'Marque' && !val) val = defaultBrand;
       return val;
     });
