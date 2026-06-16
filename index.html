@@ -1344,48 +1344,71 @@ ${existingDesc ? `Description existante:\n${existingDesc.substring(0,600)}` : ''
 
 ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique (${varAttrs.replace(/\n/g,' · ')}). Adapte le titre, les bullets et la description pour mettre en avant ces attributs spécifiques. Le contenu doit être DIFFÉRENT du parent.` : ''}`;
 
-    try {
-      const res = await fetch(`${PROXY.anthropic}/v1/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000,
-          system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
-      });
-      const data = await res.json();
-      const raw  = (data.content?.[0]?.text || '').replace(/```json|```/g,'').trim();
-      const gen  = JSON.parse(raw);
+    let lastErr = null;
+    let success = false;
 
-      const enriched = pepsEnriched[i];
-      if (rewriteTitle)    enriched['Titre'] = (gen.titre || '').substring(0, 200);
-      if (!enriched['Marque']) enriched['Marque'] = gen.marque || defaultBrand;
-      if (rewriteBullets) {
-        (gen.bullets || []).forEach((b, bi) => { enriched[`Bullet point ${bi+1}`] = b.substring(0,200); });
-        for (let n = (gen.bullets||[]).length+1; n <= 10; n++) enriched[`Bullet point ${n}`] = '';
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        if (attempt > 1) {
+          sub.textContent = `↻ Tentative ${attempt}/3...`;
+          await new Promise(r => setTimeout(r, attempt === 2 ? 4000 : 9000));
+        }
+
+        const res = await fetch(`${PROXY.anthropic}/v1/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
+          body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+            system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`HTTP ${res.status} — ${errText.substring(0,100) || 'réponse vide'}`);
+        }
+
+        const data = await res.json();
+        const raw  = (data.content?.[0]?.text || '').replace(/```json|```/g,'').trim();
+        if (!raw) throw new Error('Réponse Claude vide');
+        const gen  = JSON.parse(raw);
+
+        const enriched = pepsEnriched[i];
+        if (rewriteTitle)    enriched['Titre'] = (gen.titre || '').substring(0, 200);
+        if (!enriched['Marque']) enriched['Marque'] = gen.marque || defaultBrand;
+        if (rewriteBullets) {
+          (gen.bullets || []).forEach((b, bi) => { enriched[`Bullet point ${bi+1}`] = b.substring(0,200); });
+          for (let n = (gen.bullets||[]).length+1; n <= 10; n++) enriched[`Bullet point ${n}`] = '';
+        }
+        if (rewriteDesc) {
+          enriched['Description courte'] = gen.description_courte || '';
+          enriched['Description longue'] = gen.description_longue || '';
+        }
+        if (rewriteKeywords) {
+          enriched['Mots-clés de recherche'] = gen.mots_cles_recherche || '';
+          enriched['Mots-clés backend']      = gen.mots_cles_backend || '';
+        }
+
+        const titleLen = (gen.titre||'').length;
+        if (titleLen > 200) warnings.push(`SKU ${sku}: titre ${titleLen} chars`);
+        (gen.bullets||[]).forEach((b,bi) => { if(b.length>200) warnings.push(`SKU ${sku}: bullet ${bi+1} trop long`); });
+
+        dot.textContent = '✓'; dot.style.color = 'var(--ok)';
+        sub.textContent = `${titleLen}/200 · ${(gen.bullets||[]).length} bullets${isChild && varAttrs ? ' · '+varAttrs.split('\n')[0] : ''}`;
+        success = true;
+        break;
+
+      } catch(e) {
+        lastErr = e;
       }
-      if (rewriteDesc) {
-        enriched['Description courte'] = gen.description_courte || '';
-        enriched['Description longue'] = gen.description_longue || '';
-      }
-      if (rewriteKeywords) {
-        enriched['Mots-clés de recherche'] = gen.mots_cles_recherche || '';
-        enriched['Mots-clés backend']      = gen.mots_cles_backend || '';
-      }
-
-      const titleLen = (gen.titre||'').length;
-      if (titleLen > 200) warnings.push(`SKU ${sku}: titre ${titleLen} chars`);
-      (gen.bullets||[]).forEach((b,bi) => { if(b.length>200) warnings.push(`SKU ${sku}: bullet ${bi+1} trop long`); });
-
-      dot.textContent = '✓'; dot.style.color = 'var(--ok)';
-      sub.textContent = `${titleLen}/200 · ${(gen.bullets||[]).length} bullets${isChild && varAttrs ? ' · '+varAttrs.split('\n')[0] : ''}`;
-
-    } catch(e) {
-      dot.textContent = '✗'; dot.style.color = 'var(--er)';
-      sub.textContent = 'Erreur: ' + e.message.substring(0,50);
-      warnings.push(`SKU ${sku}: ${e.message.substring(0,60)}`);
     }
 
-    // Small delay between calls
-    if (i < total-1) await new Promise(r => setTimeout(r, 700));
+    if (!success) {
+      dot.textContent = '✗'; dot.style.color = 'var(--er)';
+      sub.textContent = 'Erreur: ' + (lastErr?.message||'').substring(0,50);
+      warnings.push(`SKU ${sku}: ${(lastErr?.message||'').substring(0,60)}`);
+    }
+
+    // Delay between calls — avoid overwhelming the proxy
+    if (i < total-1) await new Promise(r => setTimeout(r, 1500));
   }
 
   document.getElementById('peps-progress-bar').style.width = '100%';
