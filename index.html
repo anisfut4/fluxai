@@ -513,7 +513,7 @@ option{background:#1a1a23}
     <div class="fg"><label class="fl">Mots-clés SEO prioritaires</label><textarea class="ft" id="ctx-kw" style="min-height:50px">décoration fête, idée cadeau, anniversaire, mariage, EVJF, livraison rapide</textarea></div>
     <div class="fg"><label class="fl">Modèle IA</label>
       <select class="fs" id="ctx-model">
-        <option value="claude-sonnet-4-5-20250929">Sonnet 4 – Qualité ✦</option>
+        <option value="claude-sonnet-4-20250514">Sonnet 4 – Qualité ✦</option>
         <option value="claude-haiku-4-5-20251001">Haiku 4.5 – Rapide & Éco</option>
       </select>
     </div>
@@ -1272,7 +1272,7 @@ async function pepsEnrich() {
 
 RÈGLES ABSOLUES:
 - Titre: marque en PREMIER, max 200 caractères, pas de tirets longs (– —), optimisé SEO Amazon
-- Bullets: SANS emoji, max 200 caractères chacun, pas de tirets longs, exactement 10 bullets
+- Bullets: SANS emoji, max 200 caractères chacun, pas de tirets longs, EXACTEMENT 6 bullets — chacun dense, percutant, optimisé à fond (argument fort + bénéfice client + mot-clé SEO dans chaque bullet, zéro remplissage)
 - Description courte: 1-2 phrases percutantes, max 500 caractères
 - Description longue: 3-4 paragraphes, persuasif, SEO, max 2000 caractères
 - Mots-clés backend: liste séparée par virgules, sans répéter le titre
@@ -1282,7 +1282,7 @@ RÈGLES ABSOLUES:
 ${directives ? '- DIRECTIVES: ' + directives : ''}
 
 Retourne UNIQUEMENT du JSON valide, sans markdown:
-{"titre":"...","marque":"...","bullets":["...x10"],"description_courte":"...","description_longue":"...","mots_cles_recherche":"...","mots_cles_backend":"..."}`;
+{"titre":"...","marque":"...","bullets":["...x6"],"description_courte":"...","description_longue":"...","mots_cles_recherche":"...","mots_cles_backend":"..."}`;
 
   for (let i = 0; i < total; i++) {
     const row = allRows[i];
@@ -1357,7 +1357,7 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
         const res = await fetch(`${PROXY.anthropic}/v1/messages`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
-          body: JSON.stringify({ model: 'claude-sonnet-4-5-20250929', max_tokens: 3000,
+          body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 3000,
             system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
         });
 
@@ -2031,7 +2031,7 @@ Return ONLY this JSON:
       const res = await fetch(`${PROXY.anthropic}/v1/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5-20250929', max_tokens: 2000, messages: [{ role: 'user', content: userPrompt }] })
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, messages: [{ role: 'user', content: userPrompt }] })
       });
       const data = await res.json();
       const raw = (data.content?.[0]?.text || '').replace(/```json|```/g,'').trim();
@@ -2099,7 +2099,7 @@ Description: ${(desc||'').substring(0,800)}
     const analysisRes = await fetch(`${PROXY.anthropic}/v1/messages`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5-20250929', max_tokens: 800, messages: analysisMessages })
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 800, messages: analysisMessages })
     });
     const aData = await analysisRes.json();
     const analysis = JSON.parse((aData.content?.[0]?.text||'').replace(/```json|```/g,'').trim());
@@ -2212,7 +2212,7 @@ CAMERA: Sony A7R IV, 85mm, f/1.8, ISO 400-640, 1/80s. Slight handshake. NO TEXT.
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-5-20250929', max_tokens: 1200,
+          model: 'claude-sonnet-4-20250514', max_tokens: 1200,
           system: `You are a world-class Amazon product photographer and AI prompt engineer. Write one ultra-detailed image prompt. Minimum 200 words. Include exact camera specs (body, lens mm, aperture, ISO), exact lighting (source, angle°, Kelvin, softbox size), film stock with color science, and full scene description. The product is PIXEL-PERFECT FROZEN — photo editing not generation.
 
 CRITICAL LANGUAGE RULE:
@@ -3058,7 +3058,7 @@ Background color for infographics: ${bg}`;
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-5-20250929', max_tokens: 700,
+      model: 'claude-sonnet-4-20250514', max_tokens: 700,
       messages: [{ role: 'user', content: `Analyze this product. Return ONLY raw JSON, no markdown:
 ${productInfo}
 
@@ -3149,7 +3149,7 @@ Camera: Sony A7R IV, 85mm, f/1.8, ISO 400-640. NO TEXT. Square 1:1, 4K.`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': S.apiKey, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20250929', max_tokens: 1200,
+        model: 'claude-sonnet-4-20250514', max_tokens: 1200,
         system: slotSystem,
         messages: [{ role: 'user', content: `PRODUCT: ${name}
 UNIVERSE: ${analysis.universe} | MATERIAL: ${analysis.material}
