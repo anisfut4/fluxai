@@ -181,6 +181,7 @@ option{background:#1a1a23}
 .prompt-mini{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:8px 10px;margin-bottom:6px;font-size:11px;color:var(--mu);line-height:1.6}
 .pm-title{font-size:9px;color:var(--acc);font-family:'DM Mono',monospace;letter-spacing:.5px;margin-bottom:3px}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -1145,47 +1146,81 @@ function pepsDropFile(e) {
 
 function pepsLoadFile(file) {
   if (!file) return;
+  const isExcel = /\.xlsx?$/i.test(file.name);
   const reader = new FileReader();
+
   reader.onload = e => {
-    pepsFileData = e.target.result;
-    // Parse as TSV/CSV (template exports as tab-separated)
-    const text = typeof pepsFileData === 'string' ? pepsFileData : new TextDecoder().decode(pepsFileData);
-    const sep = text.includes('\t') ? '\t' : ';';
-    const lines = text.trim().split('\n').filter(l => l.trim());
-    const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g,'').replace(/\uFEFF/g,''));
+    let headers = [];
+    let dataRows = [];
 
-    pepsRows = lines.slice(1).filter(l => l.trim()).map(line => {
-      const vals = line.split(sep).map(v => v.trim().replace(/^"|"$/g,''));
-      const obj = {};
-      headers.forEach((h,i) => obj[h] = vals[i] || '');
-      return obj;
-    }).filter(r => r['SKU'] || r['ID Peps']);
+    try {
+      if (isExcel) {
+        // Parse binary xlsx via SheetJS
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
+        if (!json.length) throw new Error('Feuille vide');
+        headers = json[0].map(h => String(h).trim());
+        dataRows = json.slice(1);
+      } else {
+        // CSV/TSV text parsing
+        const text = e.target.result;
+        const sep = text.includes('\t') ? '\t' : (text.split('\n')[0].split(';').length > text.split('\n')[0].split(',').length ? ';' : ',');
+        const lines = text.trim().split('\n').filter(l => l.trim());
+        if (!lines.length) throw new Error('Fichier vide');
+        headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g,'').replace(/\uFEFF/g,''));
+        dataRows = lines.slice(1).map(line => line.split(sep).map(v => v.trim().replace(/^"|"$/g,'')));
+      }
 
-    // Show file loaded state
-    document.getElementById('peps-drop-placeholder').style.display = 'none';
-    document.getElementById('peps-drop-loaded').style.display = '';
-    document.getElementById('peps-file-name').textContent = file.name;
+      pepsRows = dataRows
+        .filter(row => row.some(c => String(c).trim()))
+        .map(row => {
+          const obj = {};
+          headers.forEach((h,i) => obj[h] = row[i] !== undefined ? String(row[i]).trim() : '');
+          return obj;
+        })
+        .filter(r => r['SKU'] || r['ID Peps']);
 
-    // Count parents and children
-    const parents = pepsRows.filter(r => !r['Variation'] || r['Variation'].toLowerCase() === 'parent');
-    const children = pepsRows.filter(r => r['Variation'].toLowerCase() === 'enfant');
-    document.getElementById('peps-file-info').textContent =
-      `${pepsRows.length} lignes — ${parents.length} parent(s) — ${children.length} enfant(s)`;
+      if (!pepsRows.length) {
+        throw new Error(`Aucune ligne valide trouvée. Colonnes détectées: ${headers.slice(0,8).join(', ')}${headers.length>8?'...':''}. Vérifie que les colonnes "SKU" ou "ID Peps" existent.`);
+      }
 
-    // Show products list
-    document.getElementById('peps-parsed-preview').style.display = '';
-    document.getElementById('peps-products-list').innerHTML = parents.slice(0,10).map(r => `
-      <div style="font-size:10px;padding:5px 8px;background:var(--s2);border-radius:6px;border:1px solid var(--b1)">
-        <div style="font-weight:600;color:var(--txt)">${r['Titre'] || r['SKU'] || '—'}</div>
-        <div style="color:var(--mu);margin-top:2px">SKU: ${r['SKU']} · ID: ${r['ID Peps']||'—'} · ${r['Thème de variation']||'Simple'}</div>
-      </div>`).join('') + (parents.length > 10 ? `<div style="font-size:10px;color:var(--mu);padding:4px">...et ${parents.length-10} autres</div>` : '');
+      // Show file loaded state
+      document.getElementById('peps-drop-placeholder').style.display = 'none';
+      document.getElementById('peps-drop-loaded').style.display = '';
+      document.getElementById('peps-file-name').textContent = file.name;
 
-    document.getElementById('peps-gen-btn').disabled = false;
-    document.getElementById('peps-gen-label').textContent = `Enrichir ${pepsRows.length} ligne(s)`;
+      const parents = pepsRows.filter(r => !r['Variation'] || r['Variation'].toLowerCase() === 'parent');
+      const children = pepsRows.filter(r => (r['Variation']||'').toLowerCase() === 'enfant');
+      document.getElementById('peps-file-info').textContent =
+        `${pepsRows.length} lignes — ${parents.length} parent(s) — ${children.length} enfant(s)`;
+
+      document.getElementById('peps-parsed-preview').style.display = '';
+      document.getElementById('peps-products-list').innerHTML = parents.slice(0,10).map(r => `
+        <div style="font-size:10px;padding:5px 8px;background:var(--s2);border-radius:6px;border:1px solid var(--b1)">
+          <div style="font-weight:600;color:var(--txt)">${r['Titre'] || r['SKU'] || '—'}</div>
+          <div style="color:var(--mu);margin-top:2px">SKU: ${r['SKU']} · ID: ${r['ID Peps']||'—'} · ${r['Thème de variation']||'Simple'}</div>
+        </div>`).join('') + (parents.length > 10 ? `<div style="font-size:10px;color:var(--mu);padding:4px">...et ${parents.length-10} autres</div>` : '');
+
+      document.getElementById('peps-gen-btn').disabled = false;
+      document.getElementById('peps-gen-label').textContent = `Enrichir ${pepsRows.length} ligne(s)`;
+
+    } catch(err) {
+      alert('Erreur lecture fichier: ' + err.message);
+      document.getElementById('peps-drop-placeholder').style.display = '';
+      document.getElementById('peps-drop-loaded').style.display = 'none';
+    }
   };
 
-  // Try reading as text first (CSV/TSV)
-  reader.readAsText(file, 'UTF-8');
+  reader.onerror = () => alert('Impossible de lire le fichier');
+
+  if (isExcel) {
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.readAsText(file, 'UTF-8');
+  }
 }
 
 async function pepsEnrich() {
@@ -1389,28 +1424,28 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
 function pepsExport() {
   if (!pepsEnriched.length) return;
 
-  // Build TSV with BOM — Excel compatible, template Peps officiel colonnes A→AZ
-  const lines = [
-    PEPS_HEADERS.join('\t'),
-    ...pepsEnriched.map(row =>
-      PEPS_HEADERS.map(h => {
-        let val = row[h] !== undefined ? String(row[h]) : '';
-        // Enforce rules
-        if (h === 'Titre') val = val.substring(0,200);
-        if (h.startsWith('Bullet point')) val = val.substring(0,200);
-        if (h === 'Marque' && !val) val = document.getElementById('peps-default-brand').value.trim() || 'Sparklers Club';
-        return val.includes('\t') || val.includes('"') ? '"'+val.replace(/"/g,'""')+'"' : val;
-      }).join('\t')
-    )
-  ].join('\r\n');
+  const defaultBrand = document.getElementById('peps-default-brand').value.trim() || 'Sparklers Club';
 
-  const blob = new Blob(['\uFEFF' + lines], { type: 'application/vnd.ms-excel;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `peps-enrichi-${Date.now()}.xls`;
-  a.click();
-  URL.revokeObjectURL(url);
+  // Build array-of-arrays for SheetJS
+  const aoa = [PEPS_HEADERS];
+  pepsEnriched.forEach(row => {
+    const line = PEPS_HEADERS.map(h => {
+      let val = row[h] !== undefined ? String(row[h]) : '';
+      if (h === 'Titre') val = val.substring(0,200);
+      if (h.startsWith('Bullet point')) val = val.substring(0,200);
+      if (h === 'Marque' && !val) val = defaultBrand;
+      return val;
+    });
+    aoa.push(line);
+  });
+
+  const worksheet = XLSX.utils.aoa_to_sheet(aoa);
+  // Reasonable column widths
+  worksheet['!cols'] = PEPS_HEADERS.map(h => ({ wch: Math.min(Math.max(h.length, 12), 40) }));
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Import marketplace');
+  XLSX.writeFile(workbook, `peps-enrichi-${Date.now()}.xlsx`);
 }
 
 const S = {
