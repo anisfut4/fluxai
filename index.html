@@ -1121,6 +1121,23 @@ let selectedSlots = new Set([0,1,2,3,4,5,6]);
 
 // ============ PEPS MODULE ============
 
+// Sanitize text — replace all special/curly characters with plain ASCII equivalents
+// Fixes CRM/legacy system compatibility issues where special chars render as "?"
+function pepsSanitize(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, '-')   // en-dash, em-dash, etc → hyphen
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")                // curly single quotes → straight
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')                // curly double quotes → straight
+    .replace(/\u2026/g, '...')                                  // ellipsis char → three dots
+    .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g, ' ')   // special spaces → regular space
+    .replace(/[\u2022\u25CF\u25AA\u2023]/g, '-')                // bullet chars → hyphen
+    .replace(/\u00AD/g, '')                                      // soft hyphen → remove
+    .replace(/[\u2212]/g, '-')                                   // minus sign → hyphen
+    .replace(/\s+/g, ' ')                                        // collapse multiple spaces
+    .trim();
+}
+
 const PEPS_HEADERS = [
   'ID Peps','SKU','Variation','Parent SKU','EAN','Titre','Marque','Type de produit','ASIN Amazon',
   'Bullet point 1','Bullet point 2','Bullet point 3','Bullet point 4','Bullet point 5',
@@ -1377,19 +1394,19 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
         }
 
         const enriched = pepsEnriched[i];
-        if (rewriteTitle)    enriched['Titre'] = (gen.titre || '').substring(0, 200);
-        if (!enriched['Marque']) enriched['Marque'] = gen.marque || defaultBrand;
+        if (rewriteTitle)    enriched['Titre'] = pepsSanitize(gen.titre || '').substring(0, 200);
+        if (!enriched['Marque']) enriched['Marque'] = pepsSanitize(gen.marque || defaultBrand);
         if (rewriteBullets) {
-          (gen.bullets || []).forEach((b, bi) => { enriched[`Bullet point ${bi+1}`] = b.substring(0,200); });
+          (gen.bullets || []).forEach((b, bi) => { enriched[`Bullet point ${bi+1}`] = pepsSanitize(b).substring(0,200); });
           for (let n = (gen.bullets||[]).length+1; n <= 10; n++) enriched[`Bullet point ${n}`] = '';
         }
         if (rewriteDesc) {
-          enriched['Description courte'] = gen.description_courte || '';
-          enriched['Description longue'] = gen.description_longue || '';
+          enriched['Description courte'] = pepsSanitize(gen.description_courte || '');
+          enriched['Description longue'] = pepsSanitize(gen.description_longue || '');
         }
         if (rewriteKeywords) {
-          enriched['Mots-clés de recherche'] = gen.mots_cles_recherche || '';
-          enriched['Mots-clés backend']      = (gen.mots_cles_backend || '').substring(0,100);
+          enriched['Mots-clés de recherche'] = pepsSanitize(gen.mots_cles_recherche || '');
+          enriched['Mots-clés backend']      = pepsSanitize(gen.mots_cles_backend || '').substring(0,100);
         }
 
         const titleLen = (gen.titre||'').length;
@@ -1466,7 +1483,7 @@ function pepsExport() {
   const aoa = [PEPS_HEADERS];
   pepsEnriched.forEach(row => {
     const line = PEPS_HEADERS.map(h => {
-      let val = row[h] !== undefined ? String(row[h]) : '';
+      let val = row[h] !== undefined ? pepsSanitize(String(row[h])) : '';
       if (h === 'Titre') val = val.substring(0,200);
       if (h.startsWith('Bullet point')) val = val.substring(0,200);
       if (h === 'Mots-clés backend') val = val.substring(0,100);
