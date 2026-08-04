@@ -1054,17 +1054,16 @@ option{background:#1a1a23}
       <div class="card">
         <div class="ch">Règles Peps appliquées</div>
         <div style="font-size:10px;color:var(--mu);line-height:2;font-family:'DM Mono',monospace">
-          <div>✓ Titre max 200 chars (legacy)</div>
           <div>✓ Titre Amazon max 75 chars</div>
           <div>✓ Highlight Amazon max 125 chars</div>
-          <div>✓ Marque en premier</div>
-          <div>✓ 6 bullets optimises, 200 chars</div>
-          <div>✓ Sans emoji, sans tiret long</div>
-          <div>✓ Mots-cles backend max 100 chars</div>
-          <div>✓ EAN vide sur parent</div>
+          <div>✓ Casse Amazon stricte auto</div>
+          <div>✓ 6 bullets structure En-Tete :</div>
+          <div>✓ Attributs auto: couleur, matiere,</div>
+          <div>&nbsp;&nbsp;theme, occasions, public cible</div>
+          <div>✓ Mots-cles espaces minuscules</div>
+          <div>✓ Sans emoji, sans caractere special</div>
           <div>✓ Marque vide -> Sparklers Club</div>
           <div>✓ Contenu unique par ligne</div>
-          <div>✓ Colonnes A->BB template officiel</div>
         </div>
       </div>
 
@@ -1425,8 +1424,21 @@ RÈGLES GÉNÉRALES
 - Aucun tiret long (– —), aucune apostrophe courbe, aucun caractère spécial exotique
 ${directives ? '- DIRECTIVES SUPPLÉMENTAIRES: ' + directives : ''}
 
+═══════════════════════════════════════════
+ATTRIBUTS STRUCTURÉS (score CDQ 0.48 — le pire du catalogue, à corriger en priorité)
+═══════════════════════════════════════════
+Tu dois INFÉRER et remplir les attributs structurés depuis les données produit. Ces attributs alimentent les filtres de recherche Amazon et la visibilité:
+- couleur: la couleur principale exacte du produit ("Or", "Argent", "Rose", "Givré", "Multicolore", "Transparent") — 1-2 mots
+- materiau: le matériau principal ("Polypropylène", "SMMA", "Carton", "Papier", "Latex", "Métal") — nom exact
+- theme: le thème visuel/décoratif si applicable ("Mariage", "Anniversaire", "Gender Reveal", "Football", "Tropical") — 1-2 mots, vide si aucun
+- pays_origine: si mentionné dans les données ("France", "Portugal") — vide si inconnu, ne JAMAIS inventer
+- occasions: EXACTEMENT 4 occasions d'usage classées par pertinence décroissante ("Mariage", "Anniversaire", "Festival", "EVJF", "Baby Shower", "Nouvel An", "Soirée d'entreprise", "Concert") — toujours 4
+- public_cible_1 et public_cible_2: le public principal et secondaire ("Adultes", "Professionnels", "Familles", "Organisateurs d'événements", "Traiteurs", "Enfants" si approprié)
+- type_article: le type précis du produit pour la classification Amazon ("Gobelet réutilisable", "Canon à confettis", "Fumigène", "Bracelet lumineux") — le plus SPÉCIFIQUE possible (règle Amazon: "préparations pour brownies" pas "produits de pâtisserie")
+RÈGLE: n'invente RIEN — infère uniquement depuis les données fournies. Si une info est indéterminable, mets une chaîne vide.
+
 Retourne UNIQUEMENT du JSON valide, sans markdown, sans backticks:
-{"titre":"...max 200c casse correcte...","titre_amazon":"...max 75c strict Marque>Type>Attribut>Variation casse correcte...","highlight_amazon":"...max 125c groupes mots Majuscule virgule...","marque":"...","bullets":["En-Tête : description","En-Tête : description","En-Tête : description","En-Tête : description","En-Tête : description","En-Tête : description"],"description_courte":"...max 500c...","description_longue":"...max 2000c 4 paragraphes...","mots_cles_recherche":"...espaces minuscules zero-mot-du-titre 200c...","mots_cles_backend":"...complementaires espaces minuscules 100c..."}`;
+{"titre":"...max 200c casse correcte...","titre_amazon":"...max 75c strict Marque>Type>Attribut>Variation casse correcte...","highlight_amazon":"...max 125c groupes mots Majuscule virgule...","marque":"...","bullets":["En-Tête : description","En-Tête : description","En-Tête : description","En-Tête : description","En-Tête : description","En-Tête : description"],"description_courte":"...max 500c...","description_longue":"...max 2000c 4 paragraphes...","mots_cles_recherche":"...espaces minuscules zero-mot-du-titre 200c...","mots_cles_backend":"...complementaires espaces minuscules 100c...","attributs":{"couleur":"...","materiau":"...","theme":"...","pays_origine":"...","occasions":["occ1","occ2","occ3","occ4"],"public_cible_1":"...","public_cible_2":"...","type_article":"..."}}`;
   let completedCount = 0;
 
   async function processRow(i) {
@@ -1540,6 +1552,21 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
           enriched['Mots-clés backend'] = pepsSanitize(gen.mots_cles_backend || '').replace(/,/g, ' ').replace(/\s+/g, ' ').substring(0, 100);
         }
 
+        // Structured attributes — fill ONLY if empty (never overwrite seller data)
+        // Targets CDQ Structured Attribute Quality score (0.48 → goal 1.0)
+        const attrs = gen.attributs || {};
+        if (!enriched['Couleur'] && attrs.couleur)              enriched['Couleur'] = pepsSanitize(attrs.couleur);
+        if (!enriched['Matériau'] && attrs.materiau)            enriched['Matériau'] = pepsSanitize(attrs.materiau);
+        if (!enriched['Thème'] && attrs.theme)                  enriched['Thème'] = pepsSanitize(attrs.theme);
+        if (!enriched["Pays d'origine"] && attrs.pays_origine)  enriched["Pays d'origine"] = pepsSanitize(attrs.pays_origine);
+        if (!enriched["Type d'article"] && attrs.type_article)  enriched["Type d'article"] = pepsSanitize(attrs.type_article);
+        if (!enriched['Public cible 1'] && attrs.public_cible_1) enriched['Public cible 1'] = pepsSanitize(attrs.public_cible_1);
+        if (!enriched['Public cible 2'] && attrs.public_cible_2) enriched['Public cible 2'] = pepsSanitize(attrs.public_cible_2);
+        (attrs.occasions || []).forEach((occ, oi) => {
+          const col = `Type d'occasion ${oi+1}`;
+          if (oi < 4 && !enriched[col] && occ) enriched[col] = pepsSanitize(occ);
+        });
+
         const titleLen = (gen.titre||'').length;
         const titleAmazonLen = (gen.titre_amazon||'').length;
         const highlightLen = (gen.highlight_amazon||'').length;
@@ -1548,8 +1575,9 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
         if (highlightLen > 125) warnings.push(`SKU ${sku}: Highlight Amazon ${highlightLen} chars (max 125)`);
         (gen.bullets||[]).forEach((b,bi) => { if(b.length>200) warnings.push(`SKU ${sku}: bullet ${bi+1} trop long`); });
 
+        const attrsFilled = ['Couleur','Matériau','Thème',"Type d'article"].filter(c => enriched[c]).length;
         dot.textContent = '✓'; dot.style.color = 'var(--ok)';
-        sub.textContent = `${titleLen}/200 · ${(gen.bullets||[]).length} bullets${isChild && varAttrs ? ' · '+varAttrs.split('\n')[0] : ''}`;
+        sub.textContent = `${titleAmazonLen}/75 · 6 bullets · ${attrsFilled}/4 attrs${isChild && varAttrs ? ' · '+varAttrs.split('\n')[0] : ''}`;
         success = true;
         break;
 
