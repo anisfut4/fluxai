@@ -981,25 +981,69 @@ option{background:#1a1a23}
           </select>
         </div>
         <div class="fg">
-          <label class="fl">Champs à réécrire</label>
-          <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
-            <label style="display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer">
-              <input type="checkbox" id="peps-rewrite-title" checked style="accent-color:var(--acc)"> Titre (optimisation Amazon)
+          <label class="fl">Mode d'enrichissement</label>
+          <select class="fs" id="peps-mode" onchange="pepsModeChanged()">
+            <option value="full">Enrichissement complet — tout réécrire</option>
+            <option value="partial">Mise à jour partielle — cocher les champs</option>
+          </select>
+        </div>
+        <div class="fg" id="peps-fields-wrap">
+          <label class="fl">Champs à écraser <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--mu2)">(les champs vides sont toujours remplis)</span></label>
+          <div style="display:flex;align-items:center;gap:8px;margin:4px 0 6px">
+            <button class="cbtn" onclick="pepsFieldsAll(true)">Tout cocher</button>
+            <button class="cbtn" onclick="pepsFieldsAll(false)">Tout décocher</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin-top:2px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer">
+              <input type="checkbox" class="peps-field-cb" id="peps-f-titre" checked style="accent-color:var(--acc)"> Titre
             </label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer">
-              <input type="checkbox" id="peps-rewrite-bullets" checked style="accent-color:var(--acc)"> Bullet points (1-10)
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer">
+              <input type="checkbox" class="peps-field-cb" id="peps-f-titre-amz" checked style="accent-color:var(--acc)"> Titre Amazon
             </label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer">
-              <input type="checkbox" id="peps-rewrite-desc" checked style="accent-color:var(--acc)"> Descriptions courte & longue
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer">
+              <input type="checkbox" class="peps-field-cb" id="peps-f-highlight" checked style="accent-color:var(--acc)"> Highlight Amazon
             </label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer">
-              <input type="checkbox" id="peps-rewrite-keywords" checked style="accent-color:var(--acc)"> Mots-clés recherche & backend
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer">
+              <input type="checkbox" class="peps-field-cb" id="peps-f-desc-courte" checked style="accent-color:var(--acc)"> Desc courte
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer">
+              <input type="checkbox" class="peps-field-cb" id="peps-f-desc-longue" checked style="accent-color:var(--acc)"> Desc longue
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer">
+              <input type="checkbox" class="peps-field-cb" id="peps-f-kw" checked style="accent-color:var(--acc)"> Mots-clés rech.
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer">
+              <input type="checkbox" class="peps-field-cb" id="peps-f-kw-backend" checked style="accent-color:var(--acc)"> Mots-clés back.
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer">
+              <input type="checkbox" class="peps-field-cb" id="peps-f-attrs" checked style="accent-color:var(--acc)"> Attributs
+            </label>
+          </div>
+          <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--mu);margin:8px 0 4px">BULLETS INDIVIDUELS</div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px">
+            <label style="display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;cursor:pointer;padding:4px;background:var(--s2);border-radius:5px;border:1px solid var(--b1)">
+              <input type="checkbox" class="peps-field-cb peps-bullet-cb" id="peps-f-b1" checked style="accent-color:var(--acc)"> 1
+            </label>
+            <label style="display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;cursor:pointer;padding:4px;background:var(--s2);border-radius:5px;border:1px solid var(--b1)">
+              <input type="checkbox" class="peps-field-cb peps-bullet-cb" id="peps-f-b2" checked style="accent-color:var(--acc)"> 2
+            </label>
+            <label style="display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;cursor:pointer;padding:4px;background:var(--s2);border-radius:5px;border:1px solid var(--b1)">
+              <input type="checkbox" class="peps-field-cb peps-bullet-cb" id="peps-f-b3" checked style="accent-color:var(--acc)"> 3
+            </label>
+            <label style="display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;cursor:pointer;padding:4px;background:var(--s2);border-radius:5px;border:1px solid var(--b1)">
+              <input type="checkbox" class="peps-field-cb peps-bullet-cb" id="peps-f-b4" checked style="accent-color:var(--acc)"> 4
+            </label>
+            <label style="display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;cursor:pointer;padding:4px;background:var(--s2);border-radius:5px;border:1px solid var(--b1)">
+              <input type="checkbox" class="peps-field-cb peps-bullet-cb" id="peps-f-b5" checked style="accent-color:var(--acc)"> 5
+            </label>
+            <label style="display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;cursor:pointer;padding:4px;background:var(--s2);border-radius:5px;border:1px solid var(--b1)">
+              <input type="checkbox" class="peps-field-cb peps-bullet-cb" id="peps-f-b6" checked style="accent-color:var(--acc)"> 6
             </label>
           </div>
         </div>
         <div class="fg">
           <label class="fl">Directives supplémentaires</label>
-          <textarea class="ft" id="peps-directives" rows="2" placeholder="ex: Mettre en avant Made in France, ton premium, cible B2B..."></textarea>
+          <textarea class="ft" id="peps-directives" rows="2" placeholder="ex: Corriger les erreurs de casse du rapport CDQ, mettre en avant Made in France, ton premium..."></textarea>
         </div>
       </div>
 
@@ -1185,6 +1229,23 @@ let pepsRows = []; // raw parsed rows [{col:val}]
 let pepsEnriched = []; // enriched rows
 let pepsFileData = null; // original file for re-injection
 
+function pepsModeChanged() {
+  const mode = document.getElementById('peps-mode').value;
+  const wrap = document.getElementById('peps-fields-wrap');
+  if (mode === 'full') {
+    pepsFieldsAll(true);
+    wrap.style.opacity = '0.5';
+    wrap.style.pointerEvents = 'none';
+  } else {
+    wrap.style.opacity = '1';
+    wrap.style.pointerEvents = '';
+  }
+}
+
+function pepsFieldsAll(state) {
+  document.querySelectorAll('.peps-field-cb').forEach(cb => cb.checked = state);
+}
+
 function pepsDropFile(e) {
   e.preventDefault();
   e.currentTarget.style.borderColor = 'var(--b2)';
@@ -1275,10 +1336,18 @@ async function pepsEnrich() {
   if (!pepsRows.length) return;
   if (!S.apiKey) { alert('Clé Claude manquante dans Paramètres'); return; }
 
-  const rewriteTitle    = document.getElementById('peps-rewrite-title').checked;
-  const rewriteBullets  = document.getElementById('peps-rewrite-bullets').checked;
-  const rewriteDesc     = document.getElementById('peps-rewrite-desc').checked;
-  const rewriteKeywords = document.getElementById('peps-rewrite-keywords').checked;
+  // Granular field selection — empty fields are ALWAYS filled regardless of checkboxes
+  const F = {
+    titre:      document.getElementById('peps-f-titre').checked,
+    titreAmz:   document.getElementById('peps-f-titre-amz').checked,
+    highlight:  document.getElementById('peps-f-highlight').checked,
+    descCourte: document.getElementById('peps-f-desc-courte').checked,
+    descLongue: document.getElementById('peps-f-desc-longue').checked,
+    kw:         document.getElementById('peps-f-kw').checked,
+    kwBackend:  document.getElementById('peps-f-kw-backend').checked,
+    attrs:      document.getElementById('peps-f-attrs').checked,
+    bullets:    [1,2,3,4,5,6].map(n => document.getElementById(`peps-f-b${n}`).checked),
+  };
   const defaultBrand    = document.getElementById('peps-default-brand').value.trim() || 'Sparklers Club';
   const directives      = document.getElementById('peps-directives').value.trim();
   const lang            = document.getElementById('peps-lang').value;
@@ -1531,40 +1600,45 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
         }
 
         const enriched = pepsEnriched[i];
-        if (rewriteTitle) {
-          enriched['Titre'] = pepsTitleCase(pepsSanitize(gen.titre || '')).substring(0, 200);
-          enriched['Titre Amazon'] = pepsTitleCase(pepsSanitize(gen.titre_amazon || gen.titre || '')).substring(0, 75);
-          enriched['Highlight Amazon'] = pepsSanitize(gen.highlight_amazon || '').substring(0, 125);
-        }
-        if (!enriched['Marque']) enriched['Marque'] = pepsSanitize(gen.marque || defaultBrand);
-        if (rewriteBullets) {
-          (gen.bullets || []).forEach((b, bi) => { enriched[`Bullet point ${bi+1}`] = pepsSanitize(b).substring(0,200); });
-          for (let n = (gen.bullets||[]).length+1; n <= 10; n++) enriched[`Bullet point ${n}`] = '';
-        }
-        if (rewriteDesc) {
-          enriched['Description courte'] = pepsSanitize(gen.description_courte || '');
-          enriched['Description longue'] = pepsSanitize(gen.description_longue || '');
-        }
-        if (rewriteKeywords) {
-          // Keywords: space-separated, max 249 bytes (we use 200 chars conservative)
-          let kw = pepsSanitize(gen.mots_cles_recherche || '').replace(/,/g, ' ').replace(/\s+/g, ' ').substring(0, 200);
-          enriched['Mots-clés de recherche'] = kw;
-          enriched['Mots-clés backend'] = pepsSanitize(gen.mots_cles_backend || '').replace(/,/g, ' ').replace(/\s+/g, ' ').substring(0, 100);
-        }
+        // RULE: empty field → always fill · filled field → overwrite only if checked
+        const canWrite = (col, checked) => checked || !String(enriched[col]||'').trim();
 
-        // Structured attributes — fill ONLY if empty (never overwrite seller data)
-        // Targets CDQ Structured Attribute Quality score (0.48 → goal 1.0)
+        if (canWrite('Titre', F.titre))
+          enriched['Titre'] = pepsTitleCase(pepsSanitize(gen.titre || '')).substring(0, 200);
+        if (canWrite('Titre Amazon', F.titreAmz))
+          enriched['Titre Amazon'] = pepsTitleCase(pepsSanitize(gen.titre_amazon || gen.titre || '')).substring(0, 75);
+        if (canWrite('Highlight Amazon', F.highlight))
+          enriched['Highlight Amazon'] = pepsSanitize(gen.highlight_amazon || '').substring(0, 125);
+        if (!enriched['Marque']) enriched['Marque'] = pepsSanitize(gen.marque || defaultBrand);
+
+        // Bullets — individual checkbox per bullet (1-6)
+        (gen.bullets || []).slice(0,6).forEach((b, bi) => {
+          const col = `Bullet point ${bi+1}`;
+          if (canWrite(col, F.bullets[bi])) enriched[col] = pepsSanitize(b).substring(0,200);
+        });
+
+        if (canWrite('Description courte', F.descCourte))
+          enriched['Description courte'] = pepsSanitize(gen.description_courte || '');
+        if (canWrite('Description longue', F.descLongue))
+          enriched['Description longue'] = pepsSanitize(gen.description_longue || '');
+
+        if (canWrite('Mots-clés de recherche', F.kw))
+          enriched['Mots-clés de recherche'] = pepsSanitize(gen.mots_cles_recherche || '').replace(/,/g, ' ').replace(/\s+/g, ' ').substring(0, 200);
+        if (canWrite('Mots-clés backend', F.kwBackend))
+          enriched['Mots-clés backend'] = pepsSanitize(gen.mots_cles_backend || '').replace(/,/g, ' ').replace(/\s+/g, ' ').substring(0, 100);
+
+        // Structured attributes — fill only if empty OR attrs checkbox checked
         const attrs = gen.attributs || {};
-        if (!enriched['Couleur'] && attrs.couleur)              enriched['Couleur'] = pepsSanitize(attrs.couleur);
-        if (!enriched['Matériau'] && attrs.materiau)            enriched['Matériau'] = pepsSanitize(attrs.materiau);
-        if (!enriched['Thème'] && attrs.theme)                  enriched['Thème'] = pepsSanitize(attrs.theme);
-        if (!enriched["Pays d'origine"] && attrs.pays_origine)  enriched["Pays d'origine"] = pepsSanitize(attrs.pays_origine);
-        if (!enriched["Type d'article"] && attrs.type_article)  enriched["Type d'article"] = pepsSanitize(attrs.type_article);
-        if (!enriched['Public cible 1'] && attrs.public_cible_1) enriched['Public cible 1'] = pepsSanitize(attrs.public_cible_1);
-        if (!enriched['Public cible 2'] && attrs.public_cible_2) enriched['Public cible 2'] = pepsSanitize(attrs.public_cible_2);
+        const aw = (col, val) => { if (val && canWrite(col, F.attrs)) enriched[col] = pepsSanitize(val); };
+        aw('Couleur', attrs.couleur);
+        aw('Matériau', attrs.materiau);
+        aw('Thème', attrs.theme);
+        aw("Pays d'origine", attrs.pays_origine);
+        aw("Type d'article", attrs.type_article);
+        aw('Public cible 1', attrs.public_cible_1);
+        aw('Public cible 2', attrs.public_cible_2);
         (attrs.occasions || []).forEach((occ, oi) => {
-          const col = `Type d'occasion ${oi+1}`;
-          if (oi < 4 && !enriched[col] && occ) enriched[col] = pepsSanitize(occ);
+          if (oi < 4) aw(`Type d'occasion ${oi+1}`, occ);
         });
 
         const titleLen = (gen.titre||'').length;
@@ -1682,7 +1756,7 @@ const S = {
   _csvIdx:0,_csvOk:0,_csvErr:0,
 };
 document.getElementById('api-inp').value = S.apiKey;
-updApiDot(); renderHist(); slotSelInit();
+updApiDot(); renderHist(); slotSelInit(); pepsModeChanged();
 
 // ============ NAVIGATION ============
 function setMode(m) {
