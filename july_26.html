@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sparklers Club — Business Review Juillet 2026 vs 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f6f7f9;--surface:#ffffff;--surface2:#fafbfc;
+  --border:#e4e7ec;--border2:#d0d5dd;
+  --t1:#101828;--t2:#475467;--t3:#98a2b3;
+  --navy:#1e3a5f;--navy-light:#eff4fa;
+  --green:#067647;--green-bg:#ecfdf3;--green-border:#abefc6;
+  --red:#b42318;--red-bg:#fef3f2;--red-border:#fecdca;
+  --amber:#b54708;--amber-bg:#fffaeb;--amber-border:#fedf89;
+  --blue:#175cd3;--blue-bg:#eff8ff;--blue-border:#b2ddff;
+  --purple:#6941c6;--purple-bg:#f9f5ff;
+  --accent:#ff6b35;--accent-bg:#fff4ef;
+  --shadow:0 1px 3px rgba(16,24,40,0.06),0 1px 2px rgba(16,24,40,0.04);
+  --shadow-md:0 4px 8px -2px rgba(16,24,40,0.08),0 2px 4px -2px rgba(16,24,40,0.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t1);font-family:'Inter',sans-serif;font-size:14px;line-height:1.5}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* HEADER */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:1.25rem 2.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.h-left{display:flex;align-items:center;gap:16px}
+.logo-mark{width:42px;height:42px;background:linear-gradient(135deg,var(--accent),#f7931e);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px}
+.h-title{font-size:17px;font-weight:700;color:var(--t1)}
+.h-sub{font-size:12px;color:var(--t3);margin-top:1px}
+.h-badge{background:var(--navy-light);color:var(--navy);border:1px solid #c5d5e8;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;font-family:'JetBrains Mono',monospace}
+
+/* NAV */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2.5rem;display:flex;gap:4px;overflow-x:auto;position:sticky;top:0;z-index:100}
+.nav-tab{padding:13px 18px;font-size:13px;font-weight:600;color:var(--t2);cursor:pointer;border:none;background:none;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .15s;font-family:'Inter',sans-serif}
+.nav-tab:hover{color:var(--t1)}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* PAGES */
+.page{display:none;padding:1.75rem 2.5rem 3rem;max-width:1440px;margin:0 auto}
+.page.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-head{margin-bottom:1.5rem}
+.page-title{font-size:21px;font-weight:800;color:var(--t1)}
+.page-sub{font-size:13px;color:var(--t2);margin-top:3px}
+
+/* KPI CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:1.5rem}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.15rem 1.25rem;box-shadow:var(--shadow)}
+.kpi-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
+.kpi-val{font-size:24px;font-weight:800;color:var(--t1);font-family:'JetBrains Mono',monospace;letter-spacing:-0.5px}
+.kpi-delta{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:14px}
+.d-up{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.d-down{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.d-flat{background:var(--surface2);color:var(--t2);border:1px solid var(--border)}
+.kpi-ref{font-size:11px;color:var(--t3);margin-top:6px;font-family:'JetBrains Mono',monospace}
+
+/* CARDS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem}
+.grid-32{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:1.5rem}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:1.5rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.4rem;box-shadow:var(--shadow)}
+.card-title{font-size:14px;font-weight:700;color:var(--t1);margin-bottom:2px}
+.card-sub{font-size:12px;color:var(--t3);margin-bottom:1.1rem}
+.chart-box{position:relative}
+
+/* INSIGHT */
+.insight{background:linear-gradient(135deg,#fffdf9,#fff8f2);border:1px solid #fde3cf;border-radius:12px;padding:1.4rem 1.6rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+.insight-tag{display:inline-block;background:var(--accent);color:#fff;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:5px;margin-bottom:10px}
+.insight p{font-size:13.5px;line-height:1.75;color:var(--t2)}
+.insight strong{color:var(--t1);font-weight:700}
+
+/* TABLES */
+.tbl-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:1.5rem}
+.tbl-head{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.tbl-title{font-size:14px;font-weight:700;color:var(--t1)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:760px}
+thead th{padding:9px 15px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:10px 15px;border-bottom:1px solid var(--border);color:var(--t1);white-space:nowrap;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fafbfd}
+.pname{font-weight:600;max-width:250px;overflow:hidden;text-overflow:ellipsis}
+.psku{font-size:10.5px;color:var(--t3);font-family:'JetBrains Mono',monospace;margin-top:1px}
+.num{font-family:'JetBrains Mono',monospace;text-align:right;font-weight:500}
+.g{color:var(--green)}.r{color:var(--red)}.w{color:var(--amber)}.b{color:var(--blue)}
+
+/* PILLS */
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2.5px 10px;border-radius:14px;white-space:nowrap}
+.pg{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.pr{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.pw{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.pb{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.pp{background:var(--purple-bg);color:var(--purple);border:1px solid #e9d7fe}
+.pn{background:var(--surface2);color:var(--t2);border:1px solid var(--border)}
+
+/* FILTERS */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fbtn{padding:6px 15px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-size:12.5px;font-weight:600;color:var(--t2);transition:all .15s;font-family:'Inter',sans-serif}
+.fbtn:hover{border-color:var(--t3)}
+.fbtn.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.search{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:7px 13px;font-size:12.5px;color:var(--t1);outline:none;width:230px;font-family:'Inter',sans-serif}
+.search:focus{border-color:var(--accent)}
+
+/* ALERTS */
+.alert{display:flex;gap:14px;padding:1.1rem 1.3rem;border-radius:12px;margin-bottom:12px;font-size:13px;line-height:1.65;border:1px solid;box-shadow:var(--shadow)}
+.a-g{background:var(--green-bg);border-color:var(--green-border)}
+.a-r{background:var(--red-bg);border-color:var(--red-border)}
+.a-w{background:var(--amber-bg);border-color:var(--amber-border)}
+.a-b{background:var(--blue-bg);border-color:var(--blue-border)}
+.alert-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+.ai-g{background:#d1fadf;color:var(--green)}.ai-r{background:#fee4e2;color:var(--red)}.ai-w{background:#fef0c7;color:var(--amber)}.ai-b{background:#d1e9ff;color:var(--blue)}
+.alert strong{color:var(--t1)}
+.alert p{color:var(--t2);font-size:12.5px;margin-top:3px}
+
+/* SYNTHESIS */
+.syn-col{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.syn-head{padding:1rem 1.3rem;font-size:13px;font-weight:700;border-bottom:1px solid var(--border)}
+.syn-body{padding:.6rem 1.3rem .9rem}
+.syn-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px;color:var(--t2);line-height:1.5;align-items:flex-start}
+.syn-item:last-child{border-bottom:none}
+.syn-dot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex-shrink:0}
+
+/* ACTION TABLE */
+.prio{font-size:10.5px;font-weight:700;letter-spacing:.05em;padding:3px 10px;border-radius:6px;text-transform:uppercase}
+
+@media(max-width:1100px){.kpi-row{grid-template-columns:repeat(3,1fr)}.grid-2,.grid-3,.grid-32{grid-template-columns:1fr}}
+@media(max-width:640px){.kpi-row{grid-template-columns:repeat(2,1fr)}.page{padding:1.25rem}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="h-left">
+    <div class="logo-mark">SC</div>
+    <div>
+      <div class="h-title">Sparklers Club — Business Review Marketplace</div>
+      <div class="h-sub">Juillet 2026 vs Juillet 2025 · Données PEPS corrigées · Analyse consultant</div>
+    </div>
+  </div>
+  <div class="h-badge">PÉRIODE : 01–31 JUILLET</div>
+</div>
+
+<div class="nav">
+  <button class="nav-tab active" onclick="go('exec',this)">Synthèse exécutive</button>
+  <button class="nav-tab" onclick="go('cat',this)">Catégories</button>
+  <button class="nav-tab" onclick="go('sku',this)">Détail SKUs</button>
+  <button class="nav-tab" onclick="go('movers',this)">Gagnants · Perdants</button>
+  <button class="nav-tab" onclick="go('marge',this)">Marge & Rentabilité</button>
+  <button class="nav-tab" onclick="go('plan',this)">Plan d'action</button>
+</div>
+
+<!-- ═══════════ SYNTHÈSE EXÉCUTIVE ═══════════ -->
+<div id="p-exec" class="page active">
+  <div class="page-head">
+    <div class="page-title">Synthèse exécutive</div>
+    <div class="page-sub">Vue d'ensemble de la performance — comparaison année sur année</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Chiffre d'affaires</div>
+      <div class="kpi-val">361,5 k€</div>
+      <div class="kpi-delta d-down">▼ −27,3 %</div>
+      <div class="kpi-ref">N−1 : 497,1 k€</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Marge totale</div>
+      <div class="kpi-val">77,2 k€</div>
+      <div class="kpi-delta d-down">▼ −20,7 %</div>
+      <div class="kpi-ref">N−1 : 97,3 k€</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Taux de marge</div>
+      <div class="kpi-val">21,4 %</div>
+      <div class="kpi-delta d-up">▲ +1,8 pt</div>
+      <div class="kpi-ref">N−1 : 19,6 %</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Commandes</div>
+      <div class="kpi-val">11 826</div>
+      <div class="kpi-delta d-down">▼ −34,5 %</div>
+      <div class="kpi-ref">N−1 : 18 050</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Unités vendues</div>
+      <div class="kpi-val">180,7 k</div>
+      <div class="kpi-delta d-down">▼ −14,7 %</div>
+      <div class="kpi-ref">N−1 : 211,8 k</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Panier moyen</div>
+      <div class="kpi-val">30,57 €</div>
+      <div class="kpi-delta d-up">▲ +11,0 %</div>
+      <div class="kpi-ref">N−1 : 27,54 €</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-tag">Lecture consultant</div>
+    <p><strong>La baisse de CA (−135,6 k€) est aux deux tiers un choix de gestion, pas une défaillance commerciale.</strong> Les SKUs arrêtés entre les deux périodes représentent −99,8 k€ de CA perdu — mais ils ne portaient que 18,2 k€ de marge (18,2 % de taux). La base commune de SKUs recule de −65,6 k€ (−16,5 %), en cohérence avec la chute de trafic Amazon documentée dans la Business Review SAS (Glance Views −22 %, taux de commandes défectueuses à 4,65 %). En parallèle, le taux de marge global progresse de +1,8 pt et le panier moyen de +11 %. <strong>Le portefeuille est plus sain, mais le trafic reste le problème n°1</strong> — le levier de reconquête n'est ni le prix, ni le mix : c'est la visibilité (SEO, Prime, defect rate).</p>
+  </div>
+
+  <div class="grid-32">
+    <div class="card">
+      <div class="card-title">Décomposition de l'écart de CA</div>
+      <div class="card-sub">D'où viennent les −135,6 k€ — pont Juillet 2025 → Juillet 2026</div>
+      <div class="chart-box" style="height:280px"><canvas id="waterfall"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">CA vs Marge — les 2 années</div>
+      <div class="card-sub">L'écart de marge se resserre</div>
+      <div class="chart-box" style="height:280px"><canvas id="caMarge"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Répartition du CA Juillet 2026</div>
+      <div class="card-sub">361,5 k€ répartis sur 12 catégories</div>
+      <div class="chart-box" style="height:270px"><canvas id="donut"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Santé du portefeuille SKU</div>
+      <div class="card-sub">Assainissement massif de la longue traîne</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center">
+          <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.05em">SKUs actifs</div>
+          <div class="mono" style="font-size:22px;font-weight:800;margin-top:6px">677</div>
+          <div style="font-size:11.5px;color:var(--red);margin-top:4px" class="mono">−240 vs N−1 (917)</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center">
+          <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.05em">CA moyen / SKU</div>
+          <div class="mono" style="font-size:22px;font-weight:800;margin-top:6px">534 €</div>
+          <div style="font-size:11.5px;color:var(--green);margin-top:4px" class="mono">+1,5 % vs N−1 (542 €… stable)</div>
+        </div>
+        <div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:10px;padding:1rem;text-align:center">
+          <div style="font-size:11px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:.05em">SKUs en perte</div>
+          <div class="mono" style="font-size:22px;font-weight:800;margin-top:6px;color:var(--green)">15</div>
+          <div style="font-size:11.5px;color:var(--t2);margin-top:4px" class="mono">vs 110 en N−1 · −225 € seulement</div>
+        </div>
+        <div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:10px;padding:1rem;text-align:center">
+          <div style="font-size:11px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Pertes évitées</div>
+          <div class="mono" style="font-size:22px;font-weight:800;margin-top:6px;color:var(--green)">+1 750 €</div>
+          <div style="font-size:11.5px;color:var(--t2);margin-top:4px" class="mono">réduction des pertes SKU YoY</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CATÉGORIES ═══════════ -->
+<div id="p-cat" class="page">
+  <div class="page-head">
+    <div class="page-title">Performance par catégorie</div>
+    <div class="page-sub">CA, marge et dynamique — 12 catégories produits</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">CA par catégorie — comparaison N vs N−1</div>
+      <div class="card-sub">Trié par CA Juillet 2026</div>
+      <div class="chart-box" style="height:340px"><canvas id="catBars"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Taux de marge par catégorie</div>
+      <div class="card-sub">Évolution du taux — N−1 vs N</div>
+      <div class="chart-box" style="height:340px"><canvas id="catTx"></canvas></div>
+    </div>
+  </div>
+
+  <div class="tbl-card">
+    <div class="tbl-head"><div class="tbl-title">Tableau détaillé — toutes catégories</div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Catégorie</th><th style="text-align:right">CA 2025</th><th style="text-align:right">CA 2026</th><th style="text-align:right">Δ CA</th><th>Évol.</th>
+          <th style="text-align:right">Marge 2025</th><th style="text-align:right">Marge 2026</th><th style="text-align:right">Tx 2025</th><th style="text-align:right">Tx 2026</th><th>Diagnostic</th>
+        </tr></thead>
+        <tbody id="catBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert a-g"><div class="alert-icon ai-g">✓</div><div><strong>Fumigènes — le redressement du mois : taux de marge 12,1 % → 22,5 %</strong><p>CA en repli de −19,9 % mais marge en hausse de +2 968 € en absolu. Le SKU 33076 (fumigènes changement de couleur) explose : +5 276 € de CA, marge de 2 248 € (37 %). L'assainissement des références sous-marges paie. Catégorie transformée d'un poids mort en profit driver.</p></div></div>
+  <div class="alert a-w"><div class="alert-icon ai-w">!</div><div><strong>Pétards — chute de −60,9 % mais un taux préservé à 27,8 %</strong><p>La perte de CA (−26,8 k€) est presque intégralement liée à l'arrêt des gammes p154xxx et 08-28D1 / 81045 (−33,4 k€ à elles seules). Le survivant 81041 devient la locomotive : +326,9 %, 3 506 € de marge (34,5 %). La catégorie est plus petite mais mieux construite. Question stratégique : les gammes arrêtées l'ont-elles été volontairement ou par rupture fournisseur ?</p></div></div>
+  <div class="alert a-b"><div class="alert-icon ai-b">↗</div><div><strong>Fusées / Artifices — seule catégorie en croissance forte : +177,8 %</strong><p>De 6,7 k€ à 18,6 k€ de CA, marge de 4 127 € à 22,2 %. Les références 31200 (ÉLECTRON), 31068 (CRISS CROSS) et 70402 (CONNAISSEUR) tirent la croissance. C'est le nouveau relais de croissance validé — la demande estivale existe et la marge est saine. À sécuriser en stock pour août et le 14 juillet 2027.</p></div></div>
+  <div class="alert a-r"><div class="alert-icon ai-r">✕</div><div><strong>Fontaines — le maillon faible persistant : −41 % de CA, 15 % de marge seulement</strong><p>Le lot 100 (120F60SX4-100x) s'effondre de moitié (−14 k€) et sa marge fond de 2 934 € à 1 430 €. Le format 4 unités résiste mieux (−11,8 %). La catégorie reste la moins rentable du portefeuille hors accessoires. Un arbitrage prix/volume s'impose : soit repositionner les lots 100 en B2B avec prix plancher, soit accepter la décroissance et concentrer le stock sur les formats courts.</p></div></div>
+</div>
+
+<!-- ═══════════ SKUs ═══════════ -->
+<div id="p-sku" class="page">
+  <div class="page-head">
+    <div class="page-title">Analyse SKU approfondie</div>
+    <div class="page-sub">258 références significatives classées en 8 statuts — la vue d'ensemble complète du cycle de vie du catalogue</div>
+  </div>
+
+  <div class="kpi-row" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi">
+      <div class="kpi-label">Disparus (0 € en 2026)</div>
+      <div class="kpi-val" style="color:var(--red)">442 SKUs</div>
+      <div class="kpi-ref">−99,8 k€ CA · −18,2 k€ marge</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Quasi-morts (−85 % et +)</div>
+      <div class="kpi-val" style="color:var(--red)">51 SKUs</div>
+      <div class="kpi-ref">−35,9 k€ CA · −6,3 k€ marge</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Forte baisse (−40/−85 %)</div>
+      <div class="kpi-val" style="color:var(--amber)">156 SKUs</div>
+      <div class="kpi-ref">−127,0 k€ CA · −22,5 k€ marge</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Explosion (+100 % et +)</div>
+      <div class="kpi-val" style="color:var(--green)">86 SKUs</div>
+      <div class="kpi-ref">+101,3 k€ CA · +20,6 k€ marge</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-title">Matrice du cycle de vie — où va le CA ?</div>
+    <div class="card-sub">Chaque barre = contribution nette au Δ CA total (−135,6 k€)</div>
+    <div class="chart-box" style="height:250px"><canvas id="lifecycleChart"></canvas></div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-tag">Lecture structurelle</div>
+    <p><strong>Le catalogue vit une rotation massive : 442 SKUs disparus, 202 nouveaux.</strong> Mais la vraie information est ailleurs : les 156 SKUs en forte baisse (−40 à −85 %) représentent la plus grosse perte (−127 k€) — plus que les disparus eux-mêmes. Ce ne sont pas des produits arrêtés : ce sont des produits <strong>encore actifs qui s'érodent</strong>, majoritairement des fumigènes mono-références, variantes hélium secondaires, verres eco cup et kits jets de scène. C'est là que se joue la reconquête : ces références ont un historique de ventes, des avis, un ranking résiduel — les relancer coûte moins cher que lancer 202 nouveautés. En face, 86 SKUs en explosion (+101 k€) compensent presque intégralement — la rotation fonctionne, mais elle détruit de la valeur SEO à chaque cycle.</p>
+  </div>
+
+  <div class="tbl-card">
+    <div class="tbl-head">
+      <div class="tbl-title">Explorateur SKU — 258 références</div>
+      <div class="filters">
+        <input class="search" id="skuSearch" placeholder="Rechercher SKU, produit ou catégorie…" oninput="sSku(this.value)" style="width:260px">
+      </div>
+    </div>
+    <div style="padding:.9rem 1.4rem;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap" id="statusFilters">
+      <button class="fbtn active" onclick="fSku('all',this)">Tous <span class="mono" style="opacity:.6">258</span></button>
+      <button class="fbtn" onclick="fSku('disparu',this)" style="color:var(--red)">☠ Disparus <span class="mono" style="opacity:.6">49</span></button>
+      <button class="fbtn" onclick="fSku('quasi_mort',this)" style="color:var(--red)">▼▼ Quasi-morts <span class="mono" style="opacity:.6">30</span></button>
+      <button class="fbtn" onclick="fSku('forte_baisse',this)" style="color:var(--amber)">▼ Forte baisse <span class="mono" style="opacity:.6">71</span></button>
+      <button class="fbtn" onclick="fSku('baisse',this)">↘ Baisse <span class="mono" style="opacity:.6">15</span></button>
+      <button class="fbtn" onclick="fSku('stable',this)">— Stables <span class="mono" style="opacity:.6">20</span></button>
+      <button class="fbtn" onclick="fSku('croissance',this)" style="color:var(--green)">↗ Croissance <span class="mono" style="opacity:.6">9</span></button>
+      <button class="fbtn" onclick="fSku('explosion',this)" style="color:var(--green)">▲▲ Explosion <span class="mono" style="opacity:.6">42</span></button>
+      <button class="fbtn" onclick="fSku('nouveau',this)" style="color:var(--blue)">★ Nouveaux <span class="mono" style="opacity:.6">22</span></button>
+    </div>
+    <div class="tbl-wrap" style="max-height:640px;overflow-y:auto">
+      <table>
+        <thead style="position:sticky;top:0;z-index:5"><tr>
+          <th>Produit / SKU</th><th>Catégorie</th>
+          <th style="text-align:right">CA 2025</th><th style="text-align:right">CA 2026</th>
+          <th style="text-align:right">Δ CA</th><th>Évol.</th>
+          <th style="text-align:right">Marge 25</th><th style="text-align:right">Marge 26</th>
+          <th style="text-align:right">Qté 25</th><th style="text-align:right">Qté 26</th>
+          <th>Statut</th>
+        </tr></thead>
+        <tbody id="skuBody"></tbody>
+      </table>
+    </div>
+    <div style="padding:.7rem 1.4rem;border-top:1px solid var(--border);font-size:12px;color:var(--t3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span id="skuCount"></span>
+      <span id="skuTotals" class="mono"></span>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:1.5rem">
+    <div class="alert a-r" style="margin:0"><div class="alert-icon ai-r">☠</div><div><strong>Les disparus qui rapportaient — à réévaluer d'urgence</strong><p>Parmi les 49 disparus significatifs, 7 étaient rentables et vendeurs : les pétards 08-28D1-XEF0 (3 340 € de marge), p154431 (1 761 €), 81045 (1 582 €), p154377 (806 €), la Flamme de Bengale P162145-5 (805 € — remplacée par les -PF, migration OK), les fontaines 32017-24 (752 €) et le jeu 451380 (218 €). <strong>Les 4 gammes de pétards à elles seules = 7,5 k€ de marge perdue.</strong> Si l'arrêt était subi (rupture fournisseur), le réassort est la décision n°1 pour l'été 2027 : la demande a été prouvée en 2025.</p></div></div>
+    <div class="alert a-w" style="margin:0"><div class="alert-icon ai-w">▼</div><div><strong>Le bloc fumigènes mono-unités — l'érosion silencieuse la plus large</strong><p>Plus de 20 références sg330xx (fumigènes à main 45s/1min, formats ×1 à ×3) reculent de −41 à −89 % : sg33038-5, sg33043-5, sg33041-5, sg33021/24/25-3, sg33022… CA cumulé perdu : ~12 k€. Aucune n'est morte, toutes s'érodent ensemble — signature typique d'une perte de ranking de la famille entière ou d'un concurrent agressif sur le mot-clé « fumigène ». À traiter comme UN sujet (audit mots-clés + variations + prix), pas 20 sujets isolés.</p></div></div>
+  </div>
+</div>
+
+<!-- ═══════════ MOVERS ═══════════ -->
+<div id="p-movers" class="page">
+  <div class="page-head">
+    <div class="page-title">Gagnants & Perdants</div>
+    <div class="page-sub">Les 12 plus fortes variations de CA dans chaque sens</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title" style="color:var(--green)">▲ Top gagnants — Δ CA</div>
+      <div class="card-sub">Contribution positive à l'évolution</div>
+      <div class="chart-box" style="height:320px"><canvas id="gainC"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--red)">▼ Top perdants — Δ CA</div>
+      <div class="card-sub">Contribution négative (dont SKUs arrêtés)</div>
+      <div class="chart-box" style="height:320px"><canvas id="loseC"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="tbl-card" style="margin:0">
+      <div class="tbl-head"><div class="tbl-title" style="color:var(--green)">Détail gagnants</div></div>
+      <div class="tbl-wrap"><table style="min-width:520px"><thead><tr><th>Produit</th><th style="text-align:right">CA 25</th><th style="text-align:right">CA 26</th><th style="text-align:right">Δ</th><th style="text-align:right">Marge 26</th></tr></thead><tbody id="gBody"></tbody></table></div>
+    </div>
+    <div class="tbl-card" style="margin:0">
+      <div class="tbl-head"><div class="tbl-title" style="color:var(--red)">Détail perdants</div></div>
+      <div class="tbl-wrap"><table style="min-width:520px"><thead><tr><th>Produit</th><th style="text-align:right">CA 25</th><th style="text-align:right">CA 26</th><th style="text-align:right">Δ</th><th style="text-align:right">Marge 26</th></tr></thead><tbody id="lBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <div class="insight" style="margin-top:1.5rem">
+    <div class="insight-tag">Point clé</div>
+    <p><strong>La consolidation hélium se confirme et s'accélère.</strong> Helium_50er absorbe la demande de toutes les variantes : +15,6 k€ pendant que Helium_50er-B (−7,3 k€), Helium_20er (−5,4 k€) et Helium_20er-B (−6,5 k€) déclinent. Le CA total hélium est stable (−1,7 %) — ce n'est pas une perte de marché, c'est une migration interne vers la variante leader. C'est sain pour le ranking (concentration du jus SEO et des avis sur un seul ASIN) mais à surveiller : si Helium_50er perd sa Buy Box ou passe en rupture, il n'y a plus de filet de sécurité. <strong>Recommandation : sécuriser le stock de Helium_50er en priorité absolue avant août.</strong></p>
+  </div>
+</div>
+
+<!-- ═══════════ MARGE ═══════════ -->
+<div id="p-marge" class="page">
+  <div class="page-head">
+    <div class="page-title">Marge & Rentabilité</div>
+    <div class="page-sub">Structure de la rentabilité et points de vigilance</div>
+  </div>
+
+  <div class="kpi-row" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi">
+      <div class="kpi-label">Marge SKUs positifs</div>
+      <div class="kpi-val" style="color:var(--green)">77,5 k€</div>
+      <div class="kpi-ref">662 SKUs rentables</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Perte SKUs négatifs</div>
+      <div class="kpi-val" style="color:var(--red)">−225 €</div>
+      <div class="kpi-ref">15 SKUs · vs −1 975 € en N−1</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Marge / commande</div>
+      <div class="kpi-val">6,53 €</div>
+      <div class="kpi-ref">N−1 : 5,39 € · +21 %</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Marge / unité</div>
+      <div class="kpi-val">0,43 €</div>
+      <div class="kpi-ref">N−1 : 0,46 € · −7 % (mix volume)</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Contribution à la marge par catégorie — Juillet 2026</div>
+      <div class="card-sub">77,2 k€ de marge totale</div>
+      <div class="chart-box" style="height:300px"><canvas id="margeCat"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Efficacité : part du CA vs part de la marge</div>
+      <div class="card-sub">Au-dessus de la ligne = catégorie sur-contributrice en marge</div>
+      <div class="chart-box" style="height:300px"><canvas id="scatter"></canvas></div>
+    </div>
+  </div>
+
+  <div class="alert a-w"><div class="alert-icon ai-w">!</div><div><strong>Helium_20erBLU — seule vraie anomalie résiduelle : −182 € de marge affichée</strong><p>Rappel de l'analyse précédente : le transport réel de ce SKU est de 10 €/commande contre 3,91 € dans PEPS. La marge corrigée est en réalité positive (~+8 €/unité). À corriger dans PEPS pour fiabiliser le reporting — c'est le dernier SKU avec ce défaut de paramétrage connu.</p></div></div>
+  <div class="alert a-g"><div class="alert-icon ai-g">✓</div><div><strong>La longue traîne déficitaire a été nettoyée : 110 SKUs en perte → 15</strong><p>En juillet 2025, 110 références perdaient de l'argent (−1 975 € cumulés sur 27,1 k€ de CA). En 2026 il n'en reste que 15 pour −225 €. C'est le signe d'une gestion pricing/prix minimum désormais sous contrôle. La quasi-totalité des coupes de catalogue (−240 SKUs) a porté sur des références à faible ou nulle contribution.</p></div></div>
+  <div class="alert a-b"><div class="alert-icon ai-b">ℹ</div><div><strong>Cierges magiques — meilleure catégorie en taux (26,9 %) malgré −14,3 % de CA</strong><p>La catégorie perd du volume (46-7UHB-M4UH −69,6 %, FV-2UGQ-EF83 −58,1 %) mais TS1-100 progresse (+35,1 %). Le taux reste le plus élevé du portefeuille. Correspond au diagnostic Amazon SAS : problème de trafic, pas de conversion. Ces ASINs sont les premiers candidats au plan SEO + relance ads.</p></div></div>
+</div>
+
+<!-- ═══════════ PLAN ═══════════ -->
+<div id="p-plan" class="page">
+  <div class="page-head">
+    <div class="page-title">Plan d'action</div>
+    <div class="page-sub">Priorités opérationnelles croisées avec la Business Review Amazon SAS</div>
+  </div>
+
+  <div class="grid-3">
+    <div class="syn-col">
+      <div class="syn-head" style="color:var(--green)">Ce qui va bien</div>
+      <div class="syn-body" id="synGood"></div>
+    </div>
+    <div class="syn-col">
+      <div class="syn-head" style="color:var(--red)">Ce qui inquiète</div>
+      <div class="syn-body" id="synBad"></div>
+    </div>
+    <div class="syn-col">
+      <div class="syn-head" style="color:var(--amber)">Décisions immédiates</div>
+      <div class="syn-body" id="synAct"></div>
+    </div>
+  </div>
+
+  <div class="tbl-card" style="margin-top:1.5rem">
+    <div class="tbl-head"><div class="tbl-title">Feuille de route — actions priorisées</div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Priorité</th><th>Action</th><th>Périmètre</th><th>Impact attendu</th><th>Échéance</th></tr></thead>
+        <tbody id="planBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="insight" style="margin-top:1.5rem">
+    <div class="insight-tag">Synthèse stratégique</div>
+    <p>Juillet 2026 confirme la trajectoire : <strong>un portefeuille assaini qui monétise mieux (+1,8 pt de marge, +11 % de panier moyen) mais qui souffre d'un déficit de visibilité structurel</strong> (−34,5 % de commandes, aligné sur les −22 % de Glance Views de la BR Amazon). Le problème n'est plus dans le P&L produit — il est dans le funnel amont. Les trois chantiers qui débloquent la reconquête : <strong>(1) taux de commandes défectueuses sous 1 %</strong> (prérequis algorithmique à tout le reste), <strong>(2) conformité titres modulaires</strong> (deadline dépassée depuis le 27 juillet — l'IA Amazon réécrit les titres en ce moment même), <strong>(3) FBA sur le top 20 ASINs</strong> pour stabiliser le Prime Share et reprendre les Buy Box IT/ES/DE. Le portefeuille est prêt à convertir le trafic — il faut maintenant aller le rechercher.</p>
+  </div>
+</div>
+
+<script>
+/* ═══ DATA ═══ */
+const CATS=[
+ {c:"Autres",ca25:118732,ca26:66527,m25:18016,m26:13155,evol:-44.0,tx25:15.2,tx26:19.8},
+ {c:"Hélium",ca25:57190,ca26:56206,m25:12753,m26:10546,evol:-1.7,tx25:22.3,tx26:18.8},
+ {c:"Eco cups / Vaisselle",ca25:77288,ca26:55999,m25:19352,m26:12565,evol:-27.5,tx25:25.0,tx26:22.4},
+ {c:"Fumigènes",ca25:49693,ca26:39781,m25:5999,m26:8967,evol:-19.9,tx25:12.1,tx26:22.5},
+ {c:"Fontaines",ca25:67253,ca26:39674,m25:7818,m26:5932,evol:-41.0,tx25:11.6,tx26:15.0},
+ {c:"Cierges magiques",ca25:37928,ca26:32503,m25:11006,m26:8742,evol:-14.3,tx25:29.0,tx26:26.9},
+ {c:"Jets de scène",ca25:28968,ca26:28672,m25:7318,m26:7317,evol:-1.0,tx25:25.3,tx26:25.5},
+ {c:"Fusées / Artifices",ca25:6686,ca26:18574,m25:1612,m26:4127,evol:177.8,tx25:24.1,tx26:22.2},
+ {c:"Pétards",ca25:44094,ca26:17255,m25:12087,m26:4803,evol:-60.9,tx25:27.4,tx26:27.8},
+ {c:"Accessoires",ca25:5704,ca26:3624,m25:496,m26:509,evol:-36.5,tx25:8.7,tx26:14.0},
+ {c:"Confettis",ca25:2558,ca26:2291,m25:677,m26:484,evol:-10.4,tx25:26.5,tx26:21.1},
+ {c:"Ballons / Déco",ca25:1000,ca26:427,m25:207,m26:88,evol:-57.3,tx25:20.7,tx26:20.6}
+];
+
+const SKUS=[{"s":"BOBINE57-50-1","p":"Bobine Thermique 57x40mm - 17m sans BPA (Lot de 50)","c":"Eco cups","ca25":13098,"ca26":0,"d":-13098,"pct":-100.0,"m25":3015,"m26":0,"q25":600,"q26":0,"st":"disparu"},{"s":"08-28D1-XEF0","p":"Sélection de pétards super cool (108 pétards)","c":"Pétards","ca25":10472,"ca26":0,"d":-10472,"pct":-100.0,"m25":3340,"m26":0,"q25":621,"q26":0,"st":"disparu"},{"s":"81045","p":"Sélection de pétards démon GIGA cool (24 gros pétards)","c":"Pétards","ca25":6811,"ca26":0,"d":-6811,"pct":-100.0,"m25":1582,"m26":0,"q25":404,"q26":0,"st":"disparu"},{"s":"p154431","p":"Assortiment de 22 Pétards Scintillants \"Mega Mix\"","c":"Pétards","ca25":6729,"ca26":0,"d":-6729,"pct":-100.0,"m25":1761,"m26":0,"q25":169,"q26":0,"st":"disparu"},{"s":"32017-24","p":"AMAZON FONTAINES GATEAUX 90 SEC (6 lot de 4 fontaines)","c":"Fontaines","ca25":5164,"ca26":0,"d":-5164,"pct":-100.0,"m25":752,"m26":0,"q25":5232,"q26":0,"st":"disparu"},{"s":"P162145-5","p":"Amazon Flamme de Bengale ROUGE VIF - Torche durée 40 sec","c":"Jets de scène","ca25":2704,"ca26":0,"d":-2704,"pct":-100.0,"m25":805,"m26":0,"q25":340,"q26":0,"st":"disparu"},{"s":"p154377","p":"Assortiment de 27 Petits Pétards \"Junior Mix\"","c":"Pétards","ca25":2650,"ca26":0,"d":-2650,"pct":-100.0,"m25":806,"m26":0,"q25":76,"q26":0,"st":"disparu"},{"s":"KIT-STITCH","p":"Pack Anniversaire Stitch - 52 Accessoires - 16 assiettes, 16 gobelets ","c":"Eco cups","ca25":1697,"ca26":0,"d":-1697,"pct":-100.0,"m25":-14,"m26":0,"q25":95,"q26":0,"st":"disparu"},{"s":"CLOUDY-SP","p":"Machine à Fumée Lourde 1500W CLOUDY","c":"Fumigènes","ca25":1260,"ca26":0,"d":-1260,"pct":-100.0,"m25":98,"m26":0,"q25":3,"q26":0,"st":"disparu"},{"s":"JR-9BRB-51LQ","p":"Fumigène à mains 45 secondes rose","c":"Fumigènes","ca25":1235,"ca26":0,"d":-1235,"pct":-100.0,"m25":88,"m26":0,"q25":126,"q26":0,"st":"disparu"},{"s":"KI-CP3L-AXJ6","p":"Gros pot fumigène 2 minutes blanc","c":"Fumigènes","ca25":1026,"ca26":0,"d":-1026,"pct":-100.0,"m25":-21,"m26":0,"q25":84,"q26":0,"st":"disparu"},{"s":"451380","p":"Piste de Jeu pour Jeux de Dés - Yam's et 421","c":"Autres","ca25":1022,"ca26":0,"d":-1022,"pct":-100.0,"m25":218,"m26":0,"q25":46,"q26":0,"st":"disparu"},{"s":"70409","p":"Assortiment de 39 artifices MASTER® – Calibre 25 mm","c":"Fusées","ca25":959,"ca26":0,"d":-959,"pct":-100.0,"m25":188,"m26":0,"q25":26,"q26":0,"st":"disparu"},{"s":"16-2100","p":"BARRE A LED - DMX RGBW 4-en-1 - 24 x 4W","c":"Autres","ca25":949,"ca26":0,"d":-949,"pct":-100.0,"m25":-20,"m26":0,"q25":9,"q26":0,"st":"disparu"},{"s":"01296","p":"Casque Gaulois / Viking avec Tresses","c":"Autres","ca25":921,"ca26":0,"d":-921,"pct":-100.0,"m25":-39,"m26":0,"q25":100,"q26":0,"st":"disparu"},{"s":"SPSPIDERMAN","p":"SPSPIDERMAN, B0DG6NY1S8","c":"Autres","ca25":799,"ca26":0,"d":-799,"pct":-100.0,"m25":-17,"m26":0,"q25":40,"q26":0,"st":"disparu"},{"s":"31010","p":"Lot de 12 fusées REFLET® N°1","c":"Fusées","ca25":790,"ca26":0,"d":-790,"pct":-100.0,"m25":206,"m26":0,"q25":50,"q26":0,"st":"disparu"},{"s":"87293978-1","p":"MASQUE PLAYER SQUID GAME - CARRÉ","c":"Accessoires","ca25":736,"ca26":0,"d":-736,"pct":-100.0,"m25":89,"m26":0,"q25":89,"q26":0,"st":"disparu"},{"s":"TAPIS-R-60","p":"Tapis Rouge VIP","c":"Autres","ca25":703,"ca26":0,"d":-703,"pct":-100.0,"m25":84,"m26":0,"q25":65,"q26":0,"st":"disparu"},{"s":"3700236691436","p":"Piñata Licorne Blanche Top Prix","c":"Autres","ca25":646,"ca26":0,"d":-646,"pct":-100.0,"m25":49,"m26":0,"q25":38,"q26":0,"st":"disparu"},{"s":"BL2-GOLD2-130","p":"BL2-GOLD2-130","c":"Autres","ca25":629,"ca26":0,"d":-629,"pct":-100.0,"m25":228,"m26":0,"q25":9,"q26":0,"st":"disparu"},{"s":"87293977-1","p":"MASQUE PLAYER SQUID GAME - TRIANGLE","c":"Accessoires","ca25":625,"ca26":0,"d":-625,"pct":-100.0,"m25":82,"m26":0,"q25":74,"q26":0,"st":"disparu"},{"s":"E6-9EC2-ZOKC","p":"Fumigène en pot 1 minute Rose (à poser au sol)","c":"Fumigènes","ca25":600,"ca26":0,"d":-600,"pct":-100.0,"m25":80,"m26":0,"q25":55,"q26":0,"st":"disparu"},{"s":"00941","p":"Chapeau \"Happy Birthday\" Or en tissu","c":"Accessoires","ca25":598,"ca26":0,"d":-598,"pct":-100.0,"m25":39,"m26":0,"q25":66,"q26":0,"st":"disparu"},{"s":"855001-10","p":"855001-10","c":"Autres","ca25":595,"ca26":0,"d":-595,"pct":-100.0,"m25":181,"m26":0,"q25":24,"q26":0,"st":"disparu"},{"s":"8712026819383","p":"Chapeau de Pirate Jack avec Dreadlocks","c":"Accessoires","ca25":589,"ca26":0,"d":-589,"pct":-100.0,"m25":18,"m26":0,"q25":46,"q26":0,"st":"disparu"},{"s":"3700752714572","p":"LYRE SPOT LED - MAXI SPOT 60 - BOOMTONE DJ","c":"Autres","ca25":562,"ca26":0,"d":-562,"pct":-100.0,"m25":-29,"m26":0,"q25":4,"q26":0,"st":"disparu"},{"s":"SJET2M25O-5","p":"Jets de scène 2 Mètres / 25 sec Or FULL BLACK","c":"Jets de scène","ca25":559,"ca26":0,"d":-559,"pct":-100.0,"m25":156,"m26":0,"q25":70,"q26":0,"st":"disparu"},{"s":"32107","p":"SACHET DE 3 FONTAINES MINI VÉSUVE®","c":"Fontaines","ca25":502,"ca26":0,"d":-502,"pct":-100.0,"m25":120,"m26":0,"q25":39,"q26":0,"st":"disparu"},{"s":"OS-0D77-AJT9","p":"kit 4 + 5 jds Or 3m30sec","c":"Autres","ca25":496,"ca26":0,"d":-496,"pct":-100.0,"m25":115,"m26":0,"q25":4,"q26":0,"st":"disparu"},{"s":"30BFOLAT","p":"Bouteille Hélium jetable 30 Ballons (0,20m3)","c":"Hélium","ca25":494,"ca26":0,"d":-494,"pct":-100.0,"m25":76,"m26":0,"q25":16,"q26":0,"st":"disparu"},{"s":"37-PUQ4-QULR","p":"37-PUQ4-QULR","c":"Autres","ca25":477,"ca26":0,"d":-477,"pct":-100.0,"m25":112,"m26":0,"q25":48,"q26":0,"st":"disparu"},{"s":"BL4-SILV10-230","p":"BL4-SILV10-230","c":"Autres","ca25":462,"ca26":0,"d":-462,"pct":-100.0,"m25":119,"m26":0,"q25":3,"q26":0,"st":"disparu"},{"s":"Helium_30erBLUE2","p":"Helium_30erBLUE2","c":"Hélium","ca25":449,"ca26":0,"d":-449,"pct":-100.0,"m25":128,"m26":0,"q25":6,"q26":0,"st":"disparu"},{"s":"H700","p":"CHAUVET DJ - Machine à fumée Hurricane 700","c":"Fumigènes","ca25":430,"ca26":0,"d":-430,"pct":-100.0,"m25":-35,"m26":0,"q25":8,"q26":0,"st":"disparu"},{"s":"5000-MULTI","p":"VERRE WINE COCKTAIL MULTI COULEUR","c":"Eco cups","ca25":429,"ca26":0,"d":-429,"pct":-100.0,"m25":65,"m26":0,"q25":10,"q26":0,"st":"disparu"},{"s":"12-HFSC","p":"Kit de tir 12 stations pour jets de scène","c":"Jets de scène","ca25":398,"ca26":0,"d":-398,"pct":-100.0,"m25":72,"m26":0,"q25":2,"q26":0,"st":"disparu"},{"s":"3660380101826","p":"Tirelire Mariage Naturel","c":"Autres","ca25":389,"ca26":0,"d":-389,"pct":-100.0,"m25":17,"m26":0,"q25":22,"q26":0,"st":"disparu"},{"s":"5F-T502-MQ81","p":"MACHINE À FUMÉE FOG 3000 DMX","c":"Fumigènes","ca25":376,"ca26":0,"d":-376,"pct":-100.0,"m25":10,"m26":0,"q25":2,"q26":0,"st":"disparu"},{"s":"32153","p":"Lot de 2 Vésuve Stroboscopique avec Flamme Rouge","c":"Jets de scène","ca25":372,"ca26":0,"d":-372,"pct":-100.0,"m25":116,"m26":0,"q25":25,"q26":0,"st":"disparu"},{"s":"5420047140722","p":"Radio Vintage Autonome avec Bluetooth USB & FM 30W Rouge","c":"Autres","ca25":364,"ca26":0,"d":-364,"pct":-100.0,"m25":-15,"m26":0,"q25":13,"q26":0,"st":"disparu"},{"s":"P167259-2","p":"P167259-2","c":"Autres","ca25":358,"ca26":0,"d":-358,"pct":-100.0,"m25":154,"m26":0,"q25":18,"q26":0,"st":"disparu"},{"s":"H1000","p":"CHAUVET DJ - Machine à Fumée Hurricane 1000","c":"Fumigènes","ca25":356,"ca26":0,"d":-356,"pct":-100.0,"m25":-58,"m26":0,"q25":4,"q26":0,"st":"disparu"},{"s":"PACK-62-OR","p":"PACK-62-OR","c":"Autres","ca25":348,"ca26":0,"d":-348,"pct":-100.0,"m25":37,"m26":0,"q25":27,"q26":0,"st":"disparu"},{"s":"F400-OCCAZ","p":"MACHINE À FUMÉE F400 PRO (OCCASION)","c":"Fumigènes","ca25":348,"ca26":0,"d":-348,"pct":-100.0,"m25":69,"m26":0,"q25":12,"q26":0,"st":"disparu"},{"s":"6M-NTAN-GVGY","p":"Gros pot fumigène 2 minutes Rouge","c":"Fumigènes","ca25":334,"ca26":0,"d":-334,"pct":-100.0,"m25":-12,"m26":0,"q25":28,"q26":0,"st":"disparu"},{"s":"1333","p":"Jeu des 7 Familles - Princesses Fées Pirates Chevaliers (Lot de 4)","c":"Eco cups","ca25":323,"ca26":0,"d":-323,"pct":-100.0,"m25":31,"m26":0,"q25":33,"q26":0,"st":"disparu"},{"s":"3609810098244","p":"Brassard Picole Nationale","c":"Autres","ca25":321,"ca26":0,"d":-321,"pct":-100.0,"m25":6,"m26":0,"q25":38,"q26":0,"st":"disparu"},{"s":"8712026309662","p":"Pinata Camion de Pompier","c":"Autres","ca25":301,"ca26":0,"d":-301,"pct":-100.0,"m25":66,"m26":0,"q25":13,"q26":0,"st":"disparu"},{"s":"p154138","p":"Assortiment de 36 Pétards et Artifices \"Micro Mix\"","c":"Pétards","ca25":9350,"ca26":29,"d":-9321,"pct":-99.7,"m25":3097,"m26":10,"q25":348,"q26":1,"st":"quasi_mort"},{"s":"KIT43M60O","p":"kit 4 + 5jsd 3m60 or","c":"Autres","ca25":2704,"ca26":275,"d":-2429,"pct":-89.8,"m25":599,"m26":63,"q25":20,"q26":2,"st":"quasi_mort"},{"s":"001010158","p":"Agitateur à Café Biodégradable 11cm (Lot de 1000)","c":"Eco cups","ca25":2613,"ca26":54,"d":-2559,"pct":-97.9,"m25":552,"m26":10,"q25":231,"q26":5,"st":"quasi_mort"},{"s":"SPMINECRAFT","p":"SPMINECRAFT","c":"Autres","ca25":2198,"ca26":54,"d":-2144,"pct":-97.6,"m25":31,"m26":-1,"q25":117,"q26":3,"st":"quasi_mort"},{"s":"7384","p":"Tirelire Bon Voyage","c":"Autres","ca25":2057,"ca26":286,"d":-1771,"pct":-86.1,"m25":60,"m26":29,"q25":180,"q26":22,"st":"quasi_mort"},{"s":"CD6422","p":"Jeu des Rubans Mariage","c":"Autres","ca25":2033,"ca26":140,"d":-1892,"pct":-93.1,"m25":40,"m26":12,"q25":146,"q26":9,"st":"quasi_mort"},{"s":"CD5527","p":"Urne Anniversaire Tropical","c":"Autres","ca25":1418,"ca26":54,"d":-1363,"pct":-96.2,"m25":12,"m26":7,"q25":162,"q26":5,"st":"quasi_mort"},{"s":"32110","p":"Amazon Maxi Fontaines - Lot de 4","c":"Fontaines","ca25":1287,"ca26":25,"d":-1262,"pct":-98.1,"m25":159,"m26":3,"q25":156,"q26":3,"st":"quasi_mort"},{"s":"BAL02","p":"Amazon Verre Piscine Transparent 40cl ","c":"Eco cups","ca25":1006,"ca26":115,"d":-891,"pct":-88.6,"m25":274,"m26":31,"q25":210,"q26":24,"st":"quasi_mort"},{"s":"sg33040-5","p":"sg33040-5","c":"Autres","ca25":682,"ca26":102,"d":-580,"pct":-85.1,"m25":92,"m26":20,"q25":23,"q26":3,"st":"quasi_mort"},{"s":"SA-GAA3-FQGT","p":"Amazon Bâton lumineux LED rouge ","c":"Autres","ca25":638,"ca26":40,"d":-598,"pct":-93.8,"m25":225,"m26":14,"q25":480,"q26":30,"st":"quasi_mort"},{"s":"87293976-1","p":"MASQUE PLAYER SQUID GAME - ROND","c":"Accessoires","ca25":623,"ca26":81,"d":-542,"pct":-87.0,"m25":56,"m26":13,"q25":80,"q26":9,"st":"quasi_mort"},{"s":"5420047126399","p":"MÉGAPHONE 50W AVEC USB ET CARTE SD","c":"Autres","ca25":622,"ca26":56,"d":-566,"pct":-91.0,"m25":-5,"m26":2,"q25":12,"q26":1,"st":"quasi_mort"},{"s":"Helium_30er-B-2","p":"Amazon Bouteille Hélium jetable 30 Ballons (0,20m3)","c":"Hélium","ca25":587,"ca26":75,"d":-513,"pct":-87.3,"m25":164,"m26":21,"q25":16,"q26":2,"st":"quasi_mort"},{"s":"H9-RNJ6-5NEK","p":"Amazon Bâton lumineux LED TRICOLORE","c":"Autres","ca25":559,"ca26":40,"d":-519,"pct":-92.9,"m25":206,"m26":15,"q25":420,"q26":30,"st":"quasi_mort"},{"s":"3700281673050","p":"Urne Colombe \"Merci\"","c":"Autres","ca25":513,"ca26":36,"d":-477,"pct":-93.0,"m25":-3,"m26":6,"q25":60,"q26":3,"st":"quasi_mort"},{"s":"D1-AJ6T-BXQW","p":"Amazon Cierges magiques pack de 10 (100)","c":"Cierges","ca25":504,"ca26":9,"d":-495,"pct":-98.2,"m25":-7,"m26":2,"q25":340,"q26":4,"st":"quasi_mort"},{"s":"86020","p":"Perruque Afro pop Noire","c":"Autres","ca25":493,"ca26":13,"d":-480,"pct":-97.4,"m25":-42,"m26":1,"q25":51,"q26":1,"st":"quasi_mort"},{"s":"sg33026-3","p":"Amazon Fumigène à mains 45 secondes violet ","c":"Fumigènes","ca25":492,"ca26":73,"d":-419,"pct":-85.2,"m25":37,"m26":15,"q25":81,"q26":9,"st":"quasi_mort"},{"s":"30850","p":"Kit Jeu à Boire Roulette pour Apéritif","c":"Autres","ca25":475,"ca26":19,"d":-456,"pct":-96.0,"m25":30,"m26":2,"q25":28,"q26":1,"st":"quasi_mort"},{"s":"29756","p":"Pinata Dinosaure Vert","c":"Autres","ca25":474,"ca26":28,"d":-446,"pct":-94.2,"m25":82,"m26":6,"q25":20,"q26":1,"st":"quasi_mort"},{"s":"50-100","p":"50-100","c":"Autres","ca25":467,"ca26":61,"d":-406,"pct":-86.9,"m25":144,"m26":20,"q25":8,"q26":1,"st":"quasi_mort"},{"s":"TUKM28-019-6","p":"TUKM28-019-6","c":"Autres","ca25":418,"ca26":24,"d":-394,"pct":-94.3,"m25":48,"m26":5,"q25":21,"q26":1,"st":"quasi_mort"},{"s":"50-P-REU","p":"Paille 20cm ø6mm Biosourcée en canne à sucre - Lot de 250","c":"Autres","ca25":394,"ca26":23,"d":-371,"pct":-94.2,"m25":63,"m26":4,"q25":18,"q26":1,"st":"quasi_mort"},{"s":"5671","p":"Urne en papier Joyeux Anniversaire Or/Blanc","c":"Autres","ca25":376,"ca26":16,"d":-361,"pct":-95.8,"m25":43,"m26":2,"q25":24,"q26":1,"st":"quasi_mort"},{"s":"sg33093-5-PF","p":"Amazon Fumigène à main 1 minute Noir","c":"Fumigènes","ca25":359,"ca26":39,"d":-320,"pct":-89.2,"m25":50,"m26":10,"q25":60,"q26":5,"st":"quasi_mort"},{"s":"BLANCG-3","p":"Amazon Fumigène à main goupille 1 minute Blanc","c":"Fumigènes","ca25":344,"ca26":45,"d":-299,"pct":-86.9,"m25":92,"m26":12,"q25":30,"q26":4,"st":"quasi_mort"},{"s":"TUKM80-019","p":"Amazon Canons à confettis 80 CM Gold ","c":"Confettis","ca25":312,"ca26":35,"d":-277,"pct":-88.8,"m25":93,"m26":10,"q25":36,"q26":4,"st":"quasi_mort"},{"s":"7383","p":"Livre d'or Bon Voyage","c":"Autres","ca25":312,"ca26":23,"d":-289,"pct":-92.6,"m25":15,"m26":3,"q25":31,"q26":2,"st":"quasi_mort"},{"s":"001010888","p":"001010305","c":"Autres","ca25":302,"ca26":39,"d":-263,"pct":-87.1,"m25":67,"m26":9,"q25":16,"q26":2,"st":"quasi_mort"},{"s":"120F60SX4-100x","p":"zLOT 100 FONTAINES 60SEC AMAZON","c":"Fontaines","ca25":27985,"ca26":13983,"d":-14002,"pct":-50.0,"m25":2934,"m26":1430,"q25":68500,"q26":34400,"st":"forte_baisse"},{"s":"Helium_50er-B","p":"Bouteille Hélium Jetable 50 ballons (0,40m3)","c":"Hélium","ca25":12346,"ca26":5012,"d":-7334,"pct":-59.4,"m25":2864,"m26":1187,"q25":257,"q26":103,"st":"forte_baisse"},{"s":"PICHET1L-20","p":"Amazon Pichet 1L Plastique Réutilisable ","c":"Eco cups","ca25":8803,"ca26":1476,"d":-7326,"pct":-83.2,"m25":2760,"m26":484,"q25":5126,"q26":820,"st":"forte_baisse"},{"s":"Helium_20er-B","p":"Bouteille Hélium 20 Ballons","c":"Hélium","ca25":8346,"ca26":1851,"d":-6495,"pct":-77.8,"m25":1407,"m26":302,"q25":276,"q26":62,"st":"forte_baisse"},{"s":"46-7UHB-M4UH","p":"Amazon Cierges magiques pack de 6 (Moyen modèle )","c":"Cierges","ca25":8654,"ca26":2628,"d":-6026,"pct":-69.6,"m25":3832,"m26":850,"q25":2930,"q26":1501,"st":"forte_baisse"},{"s":"Helium_20er","p":"Bouteille Hélium 20 Ballons","c":"Hélium","ca25":10060,"ca26":4689,"d":-5372,"pct":-53.4,"m25":1692,"m26":764,"q25":333,"q26":157,"st":"forte_baisse"},{"s":"FV-2UGQ-EF83","p":"Amazon Cierges magiques pack de 5 (GEANT) (25)","c":"Cierges","ca25":8642,"ca26":3625,"d":-5017,"pct":-58.1,"m25":3072,"m26":1304,"q25":1635,"q26":675,"st":"forte_baisse"},{"s":"30-50","p":"30-50","c":"Autres","ca25":6489,"ca26":2642,"d":-3846,"pct":-59.3,"m25":1471,"m26":685,"q25":284,"q26":106,"st":"forte_baisse"},{"s":"4FONT-10CIERGE","p":"Lot de 4 Fontaines à Gateaux 1 Minute + 30 Cierge Magique 40 Secondes,","c":"Fontaines","ca25":7853,"ca26":4403,"d":-3450,"pct":-43.9,"m25":1488,"m26":668,"q25":798,"q26":487,"st":"forte_baisse"},{"s":"SPBUL-5L","p":"SPARKLERS CLUB® - LIQUIDE À BULLES 5L","c":"Cierges","ca25":5098,"ca26":1851,"d":-3248,"pct":-63.7,"m25":-168,"m26":140,"q25":311,"q26":94,"st":"forte_baisse"},{"s":"Helium_50er-B-2","p":"Amazon  Bouteille Hélium Jetable 50 ballons (0,40m3)","c":"Hélium","ca25":4222,"ca26":1173,"d":-3048,"pct":-72.2,"m25":1205,"m26":339,"q25":80,"q26":22,"st":"forte_baisse"},{"s":"PICHET1L-10","p":"Amazon Pichet 1L Plastique Réutilisable ","c":"Eco cups","ca25":4858,"ca26":1831,"d":-3027,"pct":-62.3,"m25":1339,"m26":581,"q25":2480,"q26":820,"st":"forte_baisse"},{"s":"30-200","p":"30-200","c":"Autres","ca25":3043,"ca26":761,"d":-2282,"pct":-75.0,"m25":588,"m26":166,"q25":51,"q26":12,"st":"forte_baisse"},{"s":"VAVPV18-BLANC-40","p":"Verre à Vin Eco Cup 12cl Blanc - LOT 40 AMAZON","c":"Eco cups","ca25":3128,"ca26":857,"d":-2271,"pct":-72.6,"m25":985,"m26":281,"q25":3160,"q26":830,"st":"forte_baisse"},{"s":"855001-50","p":"855001-50","c":"Autres","ca25":2892,"ca26":829,"d":-2063,"pct":-71.3,"m25":903,"m26":260,"q25":35,"q26":10,"st":"forte_baisse"},{"s":"120F60SX4-120","p":"zLOT 120 FONTAINES 60SEC AMAZON","c":"Fontaines","ca25":2503,"ca26":478,"d":-2025,"pct":-80.9,"m25":404,"m26":97,"q25":6240,"q26":1080,"st":"forte_baisse"},{"s":"2m35or","p":"Jets de scène 2 mètres 25 secondes intérieur Or","c":"Jets de scène","ca25":2596,"ca26":660,"d":-1936,"pct":-74.6,"m25":617,"m26":178,"q25":365,"q26":85,"st":"forte_baisse"},{"s":"VAVPV18-BLANC-200","p":"Verre à Vin Eco Cup 12cl Blanc - LOT 200 AMAZON","c":"Eco cups","ca25":2500,"ca26":712,"d":-1789,"pct":-71.5,"m25":714,"m26":167,"q25":3600,"q26":1180,"st":"forte_baisse"},{"s":"30-25","p":"30-25","c":"Autres","ca25":3320,"ca26":1549,"d":-1772,"pct":-53.4,"m25":711,"m26":431,"q25":222,"q26":87,"st":"forte_baisse"},{"s":"GC-WWFU-Y3C1","p":"Jets de scène 2 Mètres / 30 sec Argent","c":"Jets de scène","ca25":3351,"ca26":1581,"d":-1770,"pct":-52.8,"m25":853,"m26":430,"q25":445,"q26":200,"st":"forte_baisse"},{"s":"sg33038-5","p":"Amazon Fumigène à main 1 minute rouge ","c":"Fumigènes","ca25":3420,"ca26":1727,"d":-1692,"pct":-49.5,"m25":468,"m26":366,"q25":575,"q26":245,"st":"forte_baisse"},{"s":"sg33043-5","p":" Amazon Fumigène à main 1 minute blanc ","c":"Fumigènes","ca25":2566,"ca26":950,"d":-1616,"pct":-63.0,"m25":355,"m26":200,"q25":430,"q26":135,"st":"forte_baisse"},{"s":"P9050-200","p":"Rince-Doigts (Lot de 500)","c":"Eco cups","ca25":2698,"ca26":1250,"d":-1449,"pct":-53.7,"m25":243,"m26":109,"q25":116,"q26":54,"st":"forte_baisse"},{"s":"4HFSC","p":"Kit de tir 4 stations + 2 télécommandes pour jets de scène","c":"Jets de scène","ca25":1700,"ca26":397,"d":-1303,"pct":-76.6,"m25":446,"m26":103,"q25":17,"q26":4,"st":"forte_baisse"},{"s":"N6-4JQL-8NEM","p":"zLOT 100 FONTAINES 60SEC AMAZON","c":"Fontaines","ca25":2764,"ca26":1638,"d":-1126,"pct":-40.7,"m25":115,"m26":48,"q25":7600,"q26":4600,"st":"forte_baisse"},{"s":"NU-139O-IWZ2","p":"Boule à Facettes 30cm + Moteur","c":"Autres","ca25":1518,"ca26":414,"d":-1104,"pct":-72.8,"m25":-81,"m26":-7,"q25":31,"q26":8,"st":"forte_baisse"},{"s":"74515","p":"Squelette Suspendu 160cm pour Décoration Halloween","c":"Autres","ca25":1287,"ca26":219,"d":-1068,"pct":-83.0,"m25":122,"m26":23,"q25":24,"q26":4,"st":"forte_baisse"},{"s":"ECO50V-100","p":"Amazon GOBELET ECO CUP 50CL","c":"Eco cups","ca25":2327,"ca26":1321,"d":-1006,"pct":-43.2,"m25":715,"m26":436,"q25":4000,"q26":2100,"st":"forte_baisse"},{"s":"ECO60V-50","p":"Amazon LOT 50 GOBELET ECO CUP 25CL ","c":"Eco cups","ca25":2389,"ca26":1397,"d":-992,"pct":-41.5,"m25":547,"m26":363,"q25":5200,"q26":2800,"st":"forte_baisse"},{"s":"30-500","p":"30-500","c":"Autres","ca25":1760,"ca26":770,"d":-990,"pct":-56.3,"m25":403,"m26":190,"q25":12,"q26":5,"st":"forte_baisse"},{"s":"30-10","p":"30-10","c":"Autres","ca25":1790,"ca26":832,"d":-958,"pct":-53.5,"m25":307,"m26":225,"q25":180,"q26":65,"st":"forte_baisse"},{"s":"sg33041-5","p":"Amazon Fumigène à main 1 minute bleu ","c":"Fumigènes","ca25":2354,"ca26":1397,"d":-957,"pct":-40.6,"m25":279,"m26":311,"q25":415,"q26":195,"st":"forte_baisse"},{"s":"P052189-DIX","p":"Amazon CLAC-DOIGT® LE TIGRE®","c":"Pétards","ca25":1169,"ca26":239,"d":-930,"pct":-79.6,"m25":124,"m26":65,"q25":1170,"q26":160,"st":"forte_baisse"},{"s":"8712026441676-1","p":"Tapis Rouge VIP","c":"Autres","ca25":1328,"ca26":409,"d":-919,"pct":-69.2,"m25":163,"m26":80,"q25":122,"q26":32,"st":"forte_baisse"},{"s":"1250SPA","p":"Bouteille Hélium Jetable 50 ballons (0,40m3)","c":"Hélium","ca25":1717,"ca26":923,"d":-794,"pct":-46.2,"m25":393,"m26":218,"q25":36,"q26":19,"st":"forte_baisse"},{"s":"TUKM28-019-2","p":"TUKM28-019-2","c":"Autres","ca25":1061,"ca26":294,"d":-768,"pct":-72.3,"m25":44,"m26":56,"q25":112,"q26":23,"st":"forte_baisse"},{"s":"ECO30-100-CLV","p":"Lot de 100 gobelets Ecocup 25 cl utile (33 cl ras bord) réutilisables ","c":"Eco cups","ca25":1040,"ca26":283,"d":-757,"pct":-72.8,"m25":116,"m26":29,"q25":3600,"q26":1000,"st":"forte_baisse"},{"s":"KIT8-10JDS2M30O","p":"KIT8-10JDS2M30O","c":"Autres","ca25":1097,"ca26":370,"d":-728,"pct":-66.3,"m25":242,"m26":83,"q25":6,"q26":2,"st":"forte_baisse"},{"s":"EK-BOR0-4QBM","p":"Gros pot fumigène 2 minutes Rose","c":"Fumigènes","ca25":1041,"ca26":334,"d":-708,"pct":-68.0,"m25":-34,"m26":41,"q25":86,"q26":21,"st":"forte_baisse"},{"s":"sg33021-3","p":"Amazon Fumigène à mains 45 secondes blanc ","c":"Fumigènes","ca25":1389,"ca26":698,"d":-691,"pct":-49.7,"m25":126,"m26":144,"q25":222,"q26":87,"st":"forte_baisse"},{"s":"sg33024-3","p":"Amazon Fumigène à mains 45 secondes rouge ","c":"Fumigènes","ca25":1473,"ca26":824,"d":-649,"pct":-44.1,"m25":119,"m26":173,"q25":240,"q26":102,"st":"forte_baisse"},{"s":"ECO30V-25","p":"Amazon LOT 25 GOBELET ECO CUP 25CL ","c":"Eco cups","ca25":1411,"ca26":826,"d":-586,"pct":-41.5,"m25":298,"m26":232,"q25":2375,"q26":1150,"st":"forte_baisse"},{"s":"5481-7","p":"Tapis de cérémonie Rouge - 15m x 100cm","c":"Autres","ca25":688,"ca26":120,"d":-568,"pct":-82.6,"m25":150,"m26":10,"q25":26,"q26":6,"st":"forte_baisse"},{"s":"sg33039-5","p":"Amazon Fumigène à main 1 minute vert ","c":"Fumigènes","ca25":921,"ca26":359,"d":-562,"pct":-61.0,"m25":126,"m26":79,"q25":155,"q26":50,"st":"forte_baisse"},{"s":"ECO50V-50","p":"Amazon GOBELET ECO CUP 50CL ","c":"Eco cups","ca25":1066,"ca26":506,"d":-560,"pct":-52.6,"m25":319,"m26":170,"q25":1550,"q26":650,"st":"forte_baisse"},{"s":"3700393677762","p":"Boule à Facettes Disco Argent - 20cm","c":"Autres","ca25":651,"ca26":102,"d":-549,"pct":-84.4,"m25":7,"m26":5,"q25":48,"q26":7,"st":"forte_baisse"},{"s":"Y3-0U3B-9Y49","p":"Lot de 4 fontaines 60 sec","c":"Fontaines","ca25":953,"ca26":407,"d":-546,"pct":-57.3,"m25":109,"m26":0,"q25":126,"q26":66,"st":"forte_baisse"},{"s":"SPAVENGERS","p":"SPAVENGERS,B0DM64TVQL","c":"Autres","ca25":799,"ca26":280,"d":-519,"pct":-65.0,"m25":-16,"m26":-6,"q25":40,"q26":14,"st":"forte_baisse"},{"s":"36-FONTAINE","p":"zLOT 4 FONTAINES 60SEC AMAZON","c":"Fontaines","ca25":623,"ca26":120,"d":-503,"pct":-80.8,"m25":-365,"m26":38,"q25":756,"q26":36,"st":"forte_baisse"},{"s":"sg33041-2","p":"Amazon Fumigène à main 1 minute bleu ","c":"Fumigènes","ca25":775,"ca26":321,"d":-454,"pct":-58.6,"m25":83,"m26":91,"q25":104,"q26":28,"st":"forte_baisse"},{"s":"HO-0EFY-6N1A","p":"KIT 4 + 5 JDS 2M30 ARGENT","c":"Autres","ca25":683,"ca26":233,"d":-451,"pct":-65.9,"m25":150,"m26":53,"q25":6,"q26":2,"st":"forte_baisse"},{"s":"29503","p":"Pinata Ballon de Foot","c":"Ballons/Déco","ca25":758,"ca26":330,"d":-428,"pct":-56.5,"m25":185,"m26":67,"q25":31,"q26":15,"st":"forte_baisse"},{"s":"75-2BHM-JLBK","p":"Fumigène en pot 1 minute Bleu (à poser au sol)","c":"Fumigènes","ca25":665,"ca26":250,"d":-415,"pct":-62.4,"m25":89,"m26":44,"q25":61,"q26":21,"st":"forte_baisse"},{"s":"Helium_20er-B-2","p":"Amazon Bouteille Hélium 20 Ballons","c":"Hélium","ca25":572,"ca26":167,"d":-405,"pct":-70.8,"m25":120,"m26":33,"q25":20,"q26":6,"st":"forte_baisse"},{"s":"Helium_20erBLUE2","p":"Helium_20erBLUE2","c":"Hélium","ca25":758,"ca26":358,"d":-400,"pct":-52.8,"m25":165,"m26":81,"q25":13,"q26":6,"st":"forte_baisse"},{"s":"TUKBT28-6","p":"TUKBT28-6","c":"Autres","ca25":535,"ca26":142,"d":-393,"pct":-73.4,"m25":69,"m26":30,"q25":27,"q26":6,"st":"forte_baisse"},{"s":"VAVPV18-BLANC-120","p":"Verre à Vin Eco Cup 12cl Blanc - LOT 120 AMAZON","c":"Eco cups","ca25":899,"ca26":514,"d":-385,"pct":-42.8,"m25":301,"m26":177,"q25":1080,"q26":600,"st":"forte_baisse"},{"s":"SG33049","p":"Gros pot fumigène 2 minutes bleu","c":"Fumigènes","ca25":654,"ca26":271,"d":-383,"pct":-58.5,"m25":81,"m26":34,"q25":41,"q26":17,"st":"forte_baisse"},{"s":"sg33022","p":"Fumigène à mains 45 secondes bleu","c":"Fumigènes","ca25":739,"ca26":363,"d":-377,"pct":-50.9,"m25":60,"m26":47,"q25":74,"q26":33,"st":"forte_baisse"},{"s":"sg33038-2","p":"Amazon Fumigène à main 1 minute rouge ","c":"Fumigènes","ca25":626,"ca26":274,"d":-352,"pct":-56.2,"m25":71,"m26":79,"q25":84,"q26":24,"st":"forte_baisse"},{"s":"sg33043-2","p":"Amazon Fumigène à main 1 minute blanc ","c":"Fumigènes","ca25":670,"ca26":320,"d":-350,"pct":-52.3,"m25":76,"m26":92,"q25":90,"q26":28,"st":"forte_baisse"},{"s":"TUKW28-6","p":"TUKW28-6","c":"Autres","ca25":637,"ca26":287,"d":-350,"pct":-55.0,"m25":62,"m26":53,"q25":32,"q26":12,"st":"forte_baisse"},{"s":"sg33025-3","p":" Amazon Fumigène à mains 45 secondes vert ","c":"Fumigènes","ca25":736,"ca26":386,"d":-350,"pct":-47.5,"m25":49,"m26":80,"q25":123,"q26":48,"st":"forte_baisse"},{"s":"31044","p":"Lot de 8 fusées BANZAÏ® N°3","c":"Fusées","ca25":743,"ca26":397,"d":-346,"pct":-46.6,"m25":161,"m26":110,"q25":44,"q26":20,"st":"forte_baisse"},{"s":"3609810100091","p":"Livre d'or Tropical Party","c":"Autres","ca25":520,"ca26":174,"d":-346,"pct":-66.5,"m25":46,"m26":23,"q25":49,"q26":15,"st":"forte_baisse"},{"s":"sg33023-3","p":"Amazon Fumigène  à mains 45 secondes jaune ","c":"Fumigènes","ca25":511,"ca26":194,"d":-317,"pct":-62.0,"m25":39,"m26":41,"q25":84,"q26":24,"st":"forte_baisse"},{"s":"2M30-GOLD-5","p":"Jets de scène 2 mètres 25 secondes intérieur Or","c":"Jets de scène","ca25":594,"ca26":280,"d":-315,"pct":-52.9,"m25":137,"m26":65,"q25":85,"q26":40,"st":"forte_baisse"},{"s":"TUKHB28-10","p":"TUKHB28-10","c":"Autres","ca25":550,"ca26":259,"d":-291,"pct":-52.9,"m25":-26,"m26":8,"q25":24,"q26":10,"st":"forte_baisse"},{"s":"sg33042-5","p":" Amazon Fumigène main  1 minute orange ","c":"Fumigènes","ca25":538,"ca26":282,"d":-256,"pct":-47.6,"m25":81,"m26":63,"q25":90,"q26":40,"st":"forte_baisse"},{"s":"sg33092-2","p":"Amazon Fumigène à main 1 minute Rose","c":"Fumigènes","ca25":530,"ca26":275,"d":-255,"pct":-48.1,"m25":62,"m26":81,"q25":72,"q26":24,"st":"forte_baisse"},{"s":"50-25","p":"50-25","c":"Autres","ca25":616,"ca26":363,"d":-254,"pct":-41.2,"m25":195,"m26":127,"q25":25,"q26":13,"st":"forte_baisse"},{"s":"Helium_30er","p":"Amazon Bouteille Hélium jetable 30 Ballons (0,20m3)","c":"Hélium","ca25":8539,"ca26":6385,"d":-2154,"pct":-25.2,"m25":2179,"m26":1308,"q25":216,"q26":184,"st":"baisse"},{"s":"VAVPV18-GIVRE-40","p":"Verre à Vin Eco Cup 12cl Translucide - Effet Givré - AMZ40","c":"Eco cups","ca25":3245,"ca26":1962,"d":-1283,"pct":-39.5,"m25":1054,"m26":679,"q25":3280,"q26":1840,"st":"baisse"},{"s":"VAVPV18-BLANC-24","p":"Verre à Vin Eco Cup 12cl Blanc - LOT 24 AMAZON","c":"Eco cups","ca25":2596,"ca26":1675,"d":-920,"pct":-35.5,"m25":856,"m26":597,"q25":2088,"q26":1224,"st":"baisse"},{"s":"MG-QSDF-O5X44","p":"BL2-GOLD2-230","c":"Autres","ca25":3565,"ca26":2726,"d":-839,"pct":-23.5,"m25":1194,"m26":956,"q25":54,"q26":39,"st":"baisse"},{"s":"2-BSBOY","p":"2-BSBOY,B0C5FGJZRR","c":"Autres","ca25":2287,"ca26":1510,"d":-777,"pct":-34.0,"m25":510,"m26":336,"q25":115,"q26":76,"st":"baisse"},{"s":"TUKM40-019-10","p":"TUKM40-019-10","c":"Autres","ca25":2814,"ca26":2162,"d":-652,"pct":-23.2,"m25":292,"m26":254,"q25":103,"q26":77,"st":"baisse"},{"s":"F400-5LL","p":"F400-5LL","c":"Autres","ca25":2027,"ca26":1395,"d":-631,"pct":-31.2,"m25":315,"m26":222,"q25":41,"q26":28,"st":"baisse"},{"s":"W5-C6ZQ-59KZ","p":"CIERGE MAGIQUE 48 PYRA","c":"Cierges","ca25":2255,"ca26":1712,"d":-543,"pct":-24.1,"m25":482,"m26":359,"q25":90,"q26":69,"st":"baisse"},{"s":"TS2","p":"Amazon Cierges magiques pack de 6 (Moyen modèle )","c":"Cierges","ca25":1375,"ca26":892,"d":-483,"pct":-35.1,"m25":612,"m26":288,"q25":460,"q26":510,"st":"baisse"},{"s":"P052189-50-1","p":"Amazon CLAC-DOIGT® LE TIGRE®","c":"Pétards","ca25":2304,"ca26":1837,"d":-466,"pct":-20.2,"m25":227,"m26":302,"q25":4450,"q26":3100,"st":"baisse"},{"s":"ECO30V-500","p":"ECO30V-500","c":"Autres","ca25":2379,"ca26":1956,"d":-423,"pct":-17.8,"m25":500,"m26":467,"q25":17,"q26":13,"st":"baisse"},{"s":"VAVPV18-GIVRE-120","p":"Verre à Vin Eco Cup 12cl Translucide - Effet Givré - AMZ120","c":"Eco cups","ca25":1387,"ca26":1026,"d":-361,"pct":-26.0,"m25":478,"m26":363,"q25":1680,"q26":1200,"st":"baisse"},{"s":"57530","p":"Amazon Fumigène à main goupille 1 minute Blanc","c":"Fumigènes","ca25":955,"ca26":643,"d":-312,"pct":-32.7,"m25":218,"m26":134,"q25":120,"q26":85,"st":"baisse"},{"s":"sg32401-10","p":"Amazon Jets de scène 2 Mètres / 30 sec Argent","c":"Jets de scène","ca25":1878,"ca26":1583,"d":-295,"pct":-15.7,"m25":423,"m26":395,"q25":310,"q26":245,"st":"baisse"},{"s":"8712026309396","p":"Pinata à Tirer Happy Birthday – Animation Anniversaire et Jeu Festif","c":"Autres","ca25":842,"ca26":558,"d":-284,"pct":-33.7,"m25":111,"m26":101,"q25":47,"q26":28,"st":"baisse"},{"s":"Helium_50er","p":"Amazon Bouteille Hélium Jetable 50 ballons (0,40m3)","c":"Hélium","ca25":3204,"ca26":18851,"d":15647,"pct":488.3,"m25":867,"m26":4325,"q25":60,"q26":395,"st":"explosion"},{"s":"ECO60V-100","p":"Lot de 100 gobelets Ecocup 25 cl utile (33 cl ras bord) réutilisables ","c":"Eco cups","ca25":6443,"ca26":15185,"d":8742,"pct":135.7,"m25":774,"m26":1767,"q25":21900,"q26":52000,"st":"explosion"},{"s":"81041","p":"Sélection de pétards demon cool (92 pétards)","c":"Pétards","ca25":2380,"ca26":10160,"d":7780,"pct":326.9,"m25":749,"m26":3506,"q25":133,"q26":511,"st":"explosion"},{"s":"Helium_30erBLUE","p":"Bouteille Hélium jetable 30 Ballons (0,20m3)","c":"Hélium","ca25":197,"ca26":5504,"d":5308,"pct":2699.7,"m25":50,"m26":308,"q25":5,"q26":216,"st":"explosion"},{"s":"33076","p":"Sachet de 4 fumigènes à main changement de couleur goupille","c":"Fumigènes","ca25":753,"ca26":6029,"d":5276,"pct":700.8,"m25":283,"m26":2248,"q25":23,"q26":186,"st":"explosion"},{"s":"ECO30V-200","p":"ECO30V-200","c":"Autres","ca25":810,"ca26":5881,"d":5071,"pct":626.2,"m25":171,"m26":949,"q25":13,"q26":106,"st":"explosion"},{"s":"31200","p":"Pack de 10 fusées ÉLECTRON® NÉON","c":"Fusées","ca25":796,"ca26":5151,"d":4355,"pct":547.1,"m25":118,"m26":744,"q25":40,"q26":261,"st":"explosion"},{"s":"B70T5740-50","p":"Bobine Thermique 57x40mm - 17m sans BPA (Lot de 50)","c":"Eco cups","ca25":177,"ca26":3916,"d":3740,"pct":2116.3,"m25":33,"m26":728,"q25":9,"q26":200,"st":"explosion"},{"s":"31068","p":"Sachet de 15 fusées CRISS CROSS®","c":"Fusées","ca25":231,"ca26":3466,"d":3234,"pct":1399.0,"m25":41,"m26":664,"q25":8,"q26":116,"st":"explosion"},{"s":"PICHET-50-1L5","p":"SPARKLERS CLUB Lot de 50 Pichets Réutilisables 1,5L en PP Alimentaire ","c":"Cierges","ca25":835,"ca26":3998,"d":3163,"pct":378.8,"m25":201,"m26":1000,"q25":12,"q26":56,"st":"explosion"},{"s":"P162145-5-PF","p":"Amazon Flamme de Bengale ROUGE VIF - Torche durée 40 sec","c":"Jets de scène","ca25":37,"ca26":3053,"d":3016,"pct":8150.4,"m25":10,"m26":906,"q25":5,"q26":385,"st":"explosion"},{"s":"1201SPA","p":"Bouteille Hélium jetable 30 Ballons (0,20m3)","c":"Hélium","ca25":861,"ca26":3858,"d":2996,"pct":347.8,"m25":217,"m26":750,"q25":22,"q26":114,"st":"explosion"},{"s":"P162145-2-PF","p":"Amazon Flamme de Bengale ROUGE VIF - Torche durée 40 sec","c":"Jets de scène","ca25":100,"ca26":2836,"d":2735,"pct":2721.5,"m25":21,"m26":589,"q25":12,"q26":336,"st":"explosion"},{"s":"70402","p":"Assortiment de 36 artifices CONNAISSEUR® – Calibre 16 mm","c":"Fusées","ca25":598,"ca26":3153,"d":2555,"pct":427.6,"m25":159,"m26":782,"q25":24,"q26":133,"st":"explosion"},{"s":"F400","p":"f400 + liquide 1litre","c":"Autres","ca25":1621,"ca26":3354,"d":1732,"pct":106.9,"m25":271,"m26":276,"q25":37,"q26":91,"st":"explosion"},{"s":"Helium_50erBLUE","p":"Bouteille Hélium Jetable 50 ballons (0,40m3)","c":"Hélium","ca25":441,"ca26":2171,"d":1730,"pct":392.4,"m25":106,"m26":322,"q25":9,"q26":55,"st":"explosion"},{"s":"Helium_20erBLU","p":"Bouteille Hélium 20 Ballons","c":"Hélium","ca25":181,"ca26":1793,"d":1612,"pct":890.9,"m25":30,"m26":-182,"q25":6,"q26":95,"st":"explosion"},{"s":"P052189-20","p":"Amazon CLAC-DOIGT® LE TIGRE®","c":"Pétards","ca25":26,"ca26":1610,"d":1584,"pct":6165.5,"m25":1,"m26":161,"q25":40,"q26":2300,"st":"explosion"},{"s":"TS1-200","p":"Amazon Cierges magiques pack de 10 (200)","c":"Cierges","ca25":1051,"ca26":2336,"d":1284,"pct":122.1,"m25":431,"m26":957,"q25":740,"q26":1640,"st":"explosion"},{"s":"ECO60V-25","p":"Amazon GOBELET ECO CUP 50CL ","c":"Eco cups","ca25":474,"ca26":1614,"d":1140,"pct":240.7,"m25":114,"m26":469,"q25":600,"q26":1775,"st":"explosion"},{"s":"120F60SX4-9-PF","p":"LOT DE 4 FONTAINES 60SEC AMAZON","c":"Fontaines","ca25":394,"ca26":1349,"d":955,"pct":242.5,"m25":98,"m26":212,"q25":87,"q26":372,"st":"explosion"},{"s":"J9-M0CV-JKBL","p":"J9-M0CV-JKBL","c":"Autres","ca25":140,"ca26":1025,"d":885,"pct":632.6,"m25":32,"m26":232,"q25":5,"q26":37,"st":"explosion"},{"s":"70411","p":"Assortiment de 39 fusées DÉBUTANT® – Calibre 16 mm","c":"Fusées","ca25":215,"ca26":1087,"d":872,"pct":405.0,"m25":63,"m26":366,"q25":9,"q26":39,"st":"explosion"},{"s":"70301","p":"Assortiment de Pétards 127 Pièces \"EXPLORER\"","c":"Pétards","ca25":54,"ca26":923,"d":869,"pct":1615.6,"m25":19,"m26":345,"q25":2,"q26":32,"st":"explosion"},{"s":"B70T5740-200","p":"B70T5740-200","c":"Autres","ca25":390,"ca26":1134,"d":744,"pct":191.0,"m25":119,"m26":336,"q25":5,"q26":15,"st":"explosion"},{"s":"PICHET-5-1L5","p":"SPARKLERS CLUB Lot de 5 Pichets Réutilisables 1,5L en PP Alimentaire –","c":"Cierges","ca25":30,"ca26":767,"d":737,"pct":2462.1,"m25":2,"m26":134,"q25":3,"q26":60,"st":"explosion"},{"s":"EVO30V-100-new","p":"Lot de 100 gobelets Ecocup 25 cl utile (33 cl ras bord) réutilisables ","c":"Eco cups","ca25":255,"ca26":942,"d":687,"pct":268.9,"m25":26,"m26":114,"q25":900,"q26":3200,"st":"explosion"},{"s":"TAROT1","p":"Jeu de Tarot - 78 Cartes","c":"Autres","ca25":188,"ca26":871,"d":683,"pct":363.8,"m25":26,"m26":132,"q25":23,"q26":104,"st":"explosion"},{"s":"PISC01","p":"Amazon Verre Piscine Transparent 40cl ","c":"Eco cups","ca25":150,"ca26":806,"d":656,"pct":438.9,"m25":43,"m26":219,"q25":30,"q26":168,"st":"explosion"},{"s":"sg32401-25","p":"Amazon Jets de scène 2 Mètres / 30 sec Argent","c":"Jets de scène","ca25":138,"ca26":791,"d":653,"pct":473.1,"m25":22,"m26":108,"q25":25,"q26":150,"st":"explosion"},{"s":"sg33024-5","p":"Amazon Fumigène à mains 45 secondes rouge ","c":"Fumigènes","ca25":43,"ca26":682,"d":639,"pct":1488.6,"m25":12,"m26":146,"q25":5,"q26":95,"st":"explosion"},{"s":"32017-36","p":"AMAZON FONTAINES GATEAUX 90 SEC ","c":"Fontaines","ca25":43,"ca26":600,"d":557,"pct":1297.9,"m25":12,"m26":163,"q25":36,"q26":504,"st":"explosion"},{"s":"sg33021-5","p":"Amazon Fumigène à mains 45 secondes blanc","c":"Fumigènes","ca25":43,"ca26":600,"d":557,"pct":1297.9,"m25":12,"m26":128,"q25":5,"q26":85,"st":"explosion"},{"s":"3660380044543","p":"Tirelire cage métallisé Or","c":"Autres","ca25":27,"ca26":536,"d":509,"pct":1910.1,"m25":9,"m26":119,"q25":1,"q26":27,"st":"explosion"},{"s":"VH-U3QP-IYRK","p":"kit 4 + 5 jds 3M30 Argent","c":"Autres","ca25":124,"ca26":629,"d":506,"pct":408.0,"m25":29,"m26":150,"q25":1,"q26":5,"st":"explosion"},{"s":"F400PRIME","p":"SPARKLERS CLUB® MACHINE À FUMÉE F400","c":"Cierges","ca25":233,"ca26":681,"d":449,"pct":192.7,"m25":22,"m26":20,"q25":7,"q26":23,"st":"explosion"},{"s":"P052189-40","p":"Amazon CLAC-DOIGT® LE TIGRE®","c":"Pétards","ca25":213,"ca26":612,"d":399,"pct":187.7,"m25":-16,"m26":20,"q25":520,"q26":1261,"st":"explosion"},{"s":"BL2-GOLD5-230","p":"BL2-GOLD5-230","c":"Autres","ca25":279,"ca26":650,"d":372,"pct":133.3,"m25":97,"m26":227,"q25":3,"q26":7,"st":"explosion"},{"s":"KIT2-2JDS3M60-OR","p":"kit 2 2jds 3m60","c":"Autres","ca25":168,"ca26":513,"d":346,"pct":206.0,"m25":60,"m26":185,"q25":2,"q26":6,"st":"explosion"},{"s":"1A-EF7I-EWHR","p":"Sachet de 4 fumigènes à main changement de couleur goupille","c":"Fumigènes","ca25":278,"ca26":611,"d":333,"pct":119.9,"m25":100,"m26":219,"q25":9,"q26":20,"st":"explosion"},{"s":"M7-LWV1-DSDY","p":"Fumigène à main Goupille 1 minute Bleu","c":"Fumigènes","ca25":238,"ca26":547,"d":309,"pct":130.0,"m25":35,"m26":80,"q25":20,"q26":46,"st":"explosion"},{"s":"BL4-gold5-230","p":"BL4-GOLD5-230","c":"Autres","ca25":258,"ca26":516,"d":258,"pct":100.0,"m25":69,"m26":137,"q25":2,"q26":4,"st":"explosion"},{"s":"BU-C5OE-2KZ3","p":"Jets de scène 2 mètres 25 secondes intérieur Or","c":"Jets de scène","ca25":4219,"ca26":5618,"d":1399,"pct":33.2,"m25":1078,"m26":1564,"q25":565,"q26":705,"st":"croissance"},{"s":"32017-12","p":"AMAZON FONTAINES GATEAUX 90 SEC  (3 lots de 4 fontaines)","c":"Fontaines","ca25":1538,"ca26":2823,"d":1285,"pct":83.6,"m25":398,"m26":739,"q25":936,"q26":1704,"st":"croissance"},{"s":"TS1-100","p":"Amazon Cierges magiques pack de 10 (100)","c":"Cierges","ca25":2392,"ca26":3232,"d":841,"pct":35.1,"m25":889,"m26":1194,"q25":1290,"q26":1758,"st":"croissance"},{"s":"70401","p":"Assortiment de 37 fusées AMATEUR® – Calibre 16 mm","c":"Fusées","ca25":814,"ca26":1512,"d":698,"pct":85.8,"m25":235,"m26":432,"q25":41,"q26":77,"st":"croissance"},{"s":"TS1-60-PF","p":"Amazon Cierges magiques pack de 10 (60)","c":"Cierges","ca25":984,"ca26":1605,"d":621,"pct":63.1,"m25":162,"m26":385,"q25":666,"q26":906,"st":"croissance"},{"s":"SG32450-25","p":"Amazon Jets de scène 2 mètres 25 secondes intérieur Or","c":"Jets de scène","ca25":1373,"ca26":1813,"d":441,"pct":32.1,"m25":221,"m26":305,"q25":250,"q26":325,"st":"croissance"},{"s":"31067","p":"Lot de 10 fusées SPACE MACHINE®","c":"Fusées","ca25":797,"ca26":1129,"d":332,"pct":41.7,"m25":194,"m26":306,"q25":32,"q26":42,"st":"croissance"},{"s":"VAVPV18-BLANC-12","p":"Verre à Vin Eco Cup 12cl Blanc - LOT 12 AMAZON","c":"Eco cups","ca25":687,"ca26":926,"d":239,"pct":34.8,"m25":248,"m26":361,"q25":360,"q26":432,"st":"croissance"},{"s":"BL2-GOLD2-360","p":"BL2-GOLD2-360","c":"Autres","ca25":473,"ca26":709,"d":235,"pct":49.7,"m25":160,"m26":240,"q25":6,"q26":9,"st":"croissance"},{"s":"30-100","p":"Lot de 100 gobelets Ecocup 25 cl utile (33 cl ras bord) réutilisables ","c":"Eco cups","ca25":0,"ca26":5365,"d":5365,"pct":null,"m25":0,"m26":620,"q25":0,"q26":18400,"st":"nouveau"},{"s":"FUMI3-GOUP","p":"FUMI3-BBR","c":"Fumigènes","ca25":0,"ca26":2541,"d":2541,"pct":null,"m25":0,"m26":632,"q25":0,"q26":88,"st":"nouveau"},{"s":"PICHET-20-1L5","p":"SPARKLERS CLUB Lot de 20 Pichets Réutilisables 1,5L en PP Alimentaire ","c":"Cierges","ca25":0,"ca26":2341,"d":2341,"pct":null,"m25":0,"m26":522,"q25":0,"q26":72,"st":"nouveau"},{"s":"70403","p":"Assortiment de 24 artifices SPÉCIALISTE® – Calibre 25 mm","c":"Fusées","ca25":0,"ca26":1877,"d":1877,"pct":null,"m25":0,"m26":446,"q25":0,"q26":64,"st":"nouveau"},{"s":"PICHET-10-1L5","p":"SPARKLERS CLUB Lot de 10 Pichets Réutilisables 1,5L en PP Alimentaire ","c":"Cierges","ca25":0,"ca26":983,"d":983,"pct":null,"m25":0,"m26":247,"q25":0,"q26":45,"st":"nouveau"},{"s":"70302","p":"Assortiment de Pétards 54 Pièces \"DISCOVERY\"","c":"Pétards","ca25":0,"ca26":856,"d":856,"pct":null,"m25":0,"m26":86,"q25":0,"q26":43,"st":"nouveau"},{"s":"CP-FLUO","p":"Chapeau Trilby style mafieux fluo néon – Lot de 12 assortis","c":"Accessoires","ca25":0,"ca26":680,"d":680,"pct":null,"m25":0,"m26":193,"q25":0,"q26":46,"st":"nouveau"},{"s":"33076-PF","p":"Sachet de 4 fumigènes à main changement de couleur goupille","c":"Fumigènes","ca25":0,"ca26":665,"d":665,"pct":null,"m25":0,"m26":228,"q25":0,"q26":23,"st":"nouveau"},{"s":"lp00403","p":"Drapeau France avec baguette 30x45cm","c":"Autres","ca25":0,"ca26":635,"d":635,"pct":null,"m25":0,"m26":167,"q25":0,"q26":64,"st":"nouveau"},{"s":"B0-QKR6-H97U","p":"Fumigène en pot 1 minute Rose (à poser au sol)","c":"Fumigènes","ca25":0,"ca26":544,"d":544,"pct":null,"m25":0,"m26":94,"q25":0,"q26":46,"st":"nouveau"},{"s":"8719323573550","p":"Machine à confettis MAGICFX® POWERSHOT II","c":"Confettis","ca25":0,"ca26":518,"d":518,"pct":null,"m25":0,"m26":-17,"q25":0,"q26":2,"st":"nouveau"},{"s":"32152","p":"Amazon Fontaines à Main Assorties - Lot de 5","c":"Fontaines","ca25":0,"ca26":478,"d":478,"pct":null,"m25":0,"m26":124,"q25":0,"q26":48,"st":"nouveau"},{"s":"50-50","p":"50-50","c":"Autres","ca25":0,"ca26":448,"d":448,"pct":null,"m25":0,"m26":135,"q25":0,"q26":13,"st":"nouveau"},{"s":"sg33027","p":"Fumigène à mains 45 secondes rose","c":"Fumigènes","ca25":0,"ca26":440,"d":440,"pct":null,"m25":0,"m26":63,"q25":0,"q26":39,"st":"nouveau"},{"s":"3700752713971","p":"Machine à fumée lourde CIRRUS 1000 ","c":"Fumigènes","ca25":0,"ca26":399,"d":399,"pct":null,"m25":0,"m26":41,"q25":0,"q26":1,"st":"nouveau"},{"s":"BL8-gold15-360","p":"BL8-GOLD15-360","c":"Autres","ca25":0,"ca26":398,"d":398,"pct":null,"m25":0,"m26":12,"q25":0,"q26":2,"st":"nouveau"},{"s":"sg33023-5","p":"Amazon Fumigène  à mains 45 secondes jaune ","c":"Fumigènes","ca25":0,"ca26":359,"d":359,"pct":null,"m25":0,"m26":79,"q25":0,"q26":50,"st":"nouveau"},{"s":"F400SOLO","p":"SPARKLERS CLUB® MACHINE À FUMÉE F400","c":"Cierges","ca25":0,"ca26":335,"d":335,"pct":null,"m25":0,"m26":15,"q25":0,"q26":11,"st":"nouveau"},{"s":"SG33044","p":"Gros pot fumigène 2 minutes blanc","c":"Fumigènes","ca25":0,"ca26":333,"d":333,"pct":null,"m25":0,"m26":18,"q25":0,"q26":24,"st":"nouveau"},{"s":"401KIT50","p":"Kit Cotillons de Nouvel An 50 Personnes","c":"Autres","ca25":0,"ca26":320,"d":320,"pct":null,"m25":0,"m26":80,"q25":0,"q26":8,"st":"nouveau"},{"s":"B70T5740-100","p":"B70T5740-100","c":"Autres","ca25":0,"ca26":315,"d":315,"pct":null,"m25":0,"m26":116,"q25":0,"q26":6,"st":"nouveau"},{"s":"P154031","p":"Assortiment de 30 Artifices \"Mini Mix\"","c":"Fusées","ca25":0,"ca26":311,"d":311,"pct":null,"m25":0,"m26":110,"q25":0,"q26":12,"st":"nouveau"},{"s":"120F60SX4-9","p":"LOT DE 4 FONTAINES 60SEC AMAZON","c":"Fontaines","ca25":9801,"ca26":8645,"d":-1156,"pct":-11.8,"m25":1109,"m26":1356,"q25":2961,"q26":2385,"st":"stable"},{"s":"TS3-100","p":"Amazon Cierges magiques pack de 8 PYRA (56)","c":"Cierges","ca25":4225,"ca26":4435,"d":210,"pct":5.0,"m25":1377,"m26":1053,"q25":1190,"q26":1629,"st":"stable"},{"s":"5FUMI-MULTI","p":"Lot 5 Fumigène Goupille Multicolore","c":"Fumigènes","ca25":4188,"ca26":3690,"d":-497,"pct":-11.9,"m25":715,"m26":640,"q25":121,"q26":106,"st":"stable"},{"s":"DR-R5OK-7S90","p":"Jets de scène 3 mètres 60 secondes Or","c":"Jets de scène","ca25":2614,"ca26":3277,"d":663,"pct":25.4,"m25":691,"m26":924,"q25":210,"q26":250,"st":"stable"},{"s":"Helium_30er-B","p":"Bouteille Hélium jetable 30 Ballons (0,20m3)","c":"Hélium","ca25":2773,"ca26":2610,"d":-163,"pct":-5.9,"m25":710,"m26":566,"q25":70,"q26":73,"st":"stable"},{"s":"SG32450-10","p":"Amazon Jets de scène 2 mètres 25 secondes intérieur Or","c":"Jets de scène","ca25":2225,"ca26":2554,"d":329,"pct":14.8,"m25":541,"m26":662,"q25":355,"q26":390,"st":"stable"},{"s":"VAVPV18-GIVRE-24","p":"Verre à Vin Eco Cup 12cl Translucide - Effet Givré - AMZ24","c":"Eco cups","ca25":2558,"ca26":2539,"d":-19,"pct":-0.8,"m25":852,"m26":917,"q25":2096,"q26":1872,"st":"stable"},{"s":"VAVPV18-GIVRE-200","p":"Verre à Vin Eco Cup 12cl Translucide - Effet Givré - AMZ200","c":"Eco cups","ca25":1929,"ca26":2138,"d":209,"pct":10.8,"m25":534,"m26":658,"q25":2980,"q26":3000,"st":"stable"},{"s":"5I-VY3Y-DRVZ","p":"Jets de scène 3 Mètres / 60 Sec argent","c":"Jets de scène","ca25":1678,"ca26":2100,"d":422,"pct":25.1,"m25":448,"m26":555,"q25":135,"q26":170,"st":"stable"},{"s":"PISC02","p":"Amazon Verre Piscine Blanc 40cl ","c":"Eco cups","ca25":1916,"ca26":1997,"d":81,"pct":4.2,"m25":678,"m26":728,"q25":402,"q26":402,"st":"stable"},{"s":"120F60SX4-100","p":"zLOT 100 FONTAINES 60SEC AMAZON","c":"Fontaines","ca25":1283,"ca26":1462,"d":179,"pct":14.0,"m25":122,"m26":212,"q25":3200,"q26":3300,"st":"stable"},{"s":"16FONT-10CIERGE","p":"16 fontaine 10 cierge","c":"Fontaines","ca25":1051,"ca26":1234,"d":183,"pct":17.4,"m25":225,"m26":254,"q25":71,"q26":85,"st":"stable"},{"s":"FL-V7Q1-6VSH","p":"Amazon Bâton lumineux LED blanc ","c":"Autres","ca25":949,"ca26":1122,"d":174,"pct":18.3,"m25":332,"m26":386,"q25":720,"q26":870,"st":"stable"},{"s":"sg33022-3","p":"Amazon Fumigène à mains 45 secondes bleu","c":"Fumigènes","ca25":921,"ca26":1100,"d":179,"pct":19.4,"m25":74,"m26":224,"q25":150,"q26":138,"st":"stable"},{"s":"BL4-SILV5-330","p":"BL4-SILV5-330","c":"Autres","ca25":969,"ca26":1066,"d":97,"pct":10.0,"m25":122,"m26":134,"q25":10,"q26":11,"st":"stable"},{"s":"TUKW28-10","p":"TUKW28-10","c":"Autres","ca25":985,"ca26":958,"d":-26,"pct":-2.7,"m25":-21,"m26":50,"q25":43,"q26":37,"st":"stable"},{"s":"VAVPV18-GIVRE-12","p":"Verre à Vin Eco Cup 12cl Translucide - Effet Givré - AMZ12","c":"Eco cups","ca25":822,"ca26":958,"d":135,"pct":16.4,"m25":301,"m26":379,"q25":432,"q26":444,"st":"stable"},{"s":"2BS-G-FE","p":"2BS-G-FE","c":"Autres","ca25":836,"ca26":875,"d":39,"pct":4.7,"m25":186,"m26":195,"q25":42,"q26":44,"st":"stable"},{"s":"8712026441676","p":"Tapis Rouge VIP","c":"Autres","ca25":814,"ca26":830,"d":16,"pct":1.9,"m25":72,"m26":162,"q25":80,"q26":65,"st":"stable"},{"s":"32017-4","p":"AMAZON FONTAINES GATEAUX 90 SEC  (1 lot de 4 fontaines)","c":"Fontaines","ca25":746,"ca26":827,"d":81,"pct":10.8,"m25":253,"m26":281,"q25":188,"q26":208,"st":"stable"}];
+
+const GAINERS=SKUS.filter(s=>s.d>0).sort((a,b)=>b.d-a.d).slice(0,10);
+const LOSERS=[
+ {s:"120F60SX4-100x",p:"zLOT 100 Fontaines 60s",ca25:27985,ca26:13983,d:-14002,m26:1430},
+ {s:"BOBINE57-50-1",p:"Bobine Thermique Lot 50 (remplacé)",ca25:13098,ca26:0,d:-13098,m26:0},
+ {s:"08-28D1-XEF0",p:"Pétards super cool ×108 (arrêté)",ca25:10472,ca26:0,d:-10472,m26:0},
+ {s:"p154138",p:"36 Pétards Micro Mix (arrêté)",ca25:9350,ca26:29,d:-9321,m26:10},
+ {s:"Helium_50er-B",p:"Hélium 50 ballons var. B",ca25:12346,ca26:5012,d:-7334,m26:1187},
+ {s:"PICHET1L-20",p:"Pichet 1L Lot 20",ca25:8803,ca26:1476,d:-7326,m26:484},
+ {s:"81045",p:"Pétards GIGA cool (arrêté)",ca25:6811,ca26:0,d:-6811,m26:0},
+ {s:"p154431",p:"22 Pétards Mega Mix (arrêté)",ca25:6729,ca26:0,d:-6729,m26:0},
+ {s:"Helium_20er-B",p:"Hélium 20 Ballons var. B",ca25:8346,ca26:1851,d:-6495,m26:302},
+ {s:"46-7UHB-M4UH",p:"Cierges magiques pack 6",ca25:8654,ca26:2628,d:-6026,m26:850}
+];
+
+/* ═══ CHARTS ═══ */
+Chart.defaults.color='#667085';
+Chart.defaults.borderColor='#eaecf0';
+Chart.defaults.font.family="'Inter',sans-serif";
+Chart.defaults.font.size=11.5;
+const M='JetBrains Mono';
+
+new Chart('waterfall',{type:'bar',data:{
+ labels:['CA Juillet 2025','SKUs arrêtés','Base commune','Nouveaux SKUs','CA Juillet 2026'],
+ datasets:[{data:[497092,-99791,-65599,29832,361533],
+  backgroundColor:['#1e3a5f','#d92d20','#f97066','#12b76a','#ff6b35'],
+  borderRadius:6,borderWidth:0,barPercentage:.65}]
+},options:{responsive:true,maintainAspectRatio:false,
+ plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.raw>=0?'+':'')+(c.raw/1000).toFixed(1)+' k€'}}},
+ scales:{y:{grid:{color:'#f2f4f7'},ticks:{callback:v=>(v/1000).toFixed(0)+'k'}},x:{grid:{display:false},ticks:{font:{size:10.5}}}}}});
+
+new Chart('caMarge',{type:'bar',data:{
+ labels:['CA (k€)','Marge (k€)','Taux (%)'],
+ datasets:[
+  {label:'Juil. 2025',data:[497.1,97.3,19.6],backgroundColor:'#b2ccе8'.replace('е','e'),borderRadius:5,borderWidth:0},
+  {label:'Juil. 2026',data:[361.5,77.2,21.4],backgroundColor:'#ff6b35',borderRadius:5,borderWidth:0}
+ ]},options:{responsive:true,maintainAspectRatio:false,
+ plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:14,usePointStyle:true}}},
+ scales:{y:{grid:{color:'#f2f4f7'}},x:{grid:{display:false}}}}});
+
+new Chart('donut',{type:'doughnut',data:{
+ labels:CATS.map(c=>c.c),
+ datasets:[{data:CATS.map(c=>c.ca26),
+  backgroundColor:['#94a3b8','#175cd3','#12b76a','#f79009','#f04438','#6941c6','#0e9384','#ff6b35','#dc6803','#84caff','#d444f1','#667085'],
+  borderWidth:2,borderColor:'#fff'}]
+},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+ plugins:{legend:{position:'right',labels:{boxWidth:10,padding:9,font:{size:10.5},usePointStyle:true}}}}});
+
+const sc=[...CATS].sort((a,b)=>b.ca26-a.ca26);
+new Chart('catBars',{type:'bar',data:{
+ labels:sc.map(c=>c.c),
+ datasets:[
+  {label:'2025',data:sc.map(c=>c.ca25),backgroundColor:'#cbd5e1',borderRadius:4,borderWidth:0},
+  {label:'2026',data:sc.map(c=>c.ca26),backgroundColor:'#1e3a5f',borderRadius:4,borderWidth:0}
+ ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+ plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:12,usePointStyle:true}}},
+ scales:{x:{grid:{color:'#f2f4f7'},ticks:{callback:v=>(v/1000).toFixed(0)+'k'}},y:{grid:{display:false},ticks:{font:{size:10.5}}}}}});
+
+new Chart('catTx',{type:'bar',data:{
+ labels:sc.map(c=>c.c),
+ datasets:[
+  {label:'Tx 2025',data:sc.map(c=>c.tx25),backgroundColor:'#cbd5e1',borderRadius:4,borderWidth:0},
+  {label:'Tx 2026',data:sc.map(c=>c.tx26),backgroundColor:sc.map(c=>c.tx26>=c.tx25?'#12b76a':'#f79009'),borderRadius:4,borderWidth:0}
+ ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+ plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:12,usePointStyle:true}}},
+ scales:{x:{grid:{color:'#f2f4f7'},ticks:{callback:v=>v+'%'}},y:{grid:{display:false},ticks:{font:{size:10.5}}}}}});
+
+new Chart('gainC',{type:'bar',data:{
+ labels:GAINERS.map(g=>g.s),
+ datasets:[{data:GAINERS.map(g=>g.d),backgroundColor:'#12b76a',borderRadius:5,borderWidth:0}]
+},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+ plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'+'+(c.raw/1000).toFixed(1)+' k€'}}},
+ scales:{x:{grid:{color:'#f2f4f7'},ticks:{callback:v=>(v/1000).toFixed(0)+'k'}},y:{grid:{display:false},ticks:{font:{size:10,family:M}}}}}});
+
+new Chart('loseC',{type:'bar',data:{
+ labels:LOSERS.map(l=>l.s),
+ datasets:[{data:LOSERS.map(l=>l.d),backgroundColor:'#f04438',borderRadius:5,borderWidth:0}]
+},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+ plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.raw/1000).toFixed(1)+' k€'}}},
+ scales:{x:{grid:{color:'#f2f4f7'},ticks:{callback:v=>(v/1000).toFixed(0)+'k'}},y:{grid:{display:false},ticks:{font:{size:10,family:M}}}}}});
+
+new Chart('margeCat',{type:'bar',data:{
+ labels:sc.map(c=>c.c),
+ datasets:[{data:sc.map(c=>c.m26),
+  backgroundColor:sc.map(c=>c.m26>=8000?'#12b76a':c.m26>=4000?'#84caff':'#cbd5e1'),borderRadius:5,borderWidth:0}]
+},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+ plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.raw/1000).toFixed(1)+' k€'}}},
+ scales:{x:{grid:{color:'#f2f4f7'},ticks:{callback:v=>(v/1000).toFixed(0)+'k'}},y:{grid:{display:false},ticks:{font:{size:10.5}}}}}});
+
+const totCA=361533,totM=77236;
+new Chart('scatter',{type:'scatter',data:{
+ datasets:[{data:sc.map(c=>({x:c.ca26/totCA*100,y:c.m26/totM*100,label:c.c})),
+  backgroundColor:'#1e3a5f',pointRadius:6,pointHoverRadius:8},
+ {type:'line',data:[{x:0,y:0},{x:20,y:20}],borderColor:'#d0d5dd',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false}]
+},options:{responsive:true,maintainAspectRatio:false,
+ plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.label?`${c.raw.label}: ${c.raw.x.toFixed(1)}% CA / ${c.raw.y.toFixed(1)}% marge`:''}}},
+ scales:{x:{title:{display:true,text:'Part du CA (%)',font:{size:11}},grid:{color:'#f2f4f7'}},y:{title:{display:true,text:'Part de la marge (%)',font:{size:11}},grid:{color:'#f2f4f7'}}}}});
+
+/* ═══ TABLES ═══ */
+const fmt=n=>Math.round(n).toLocaleString('fr-FR')+' €';
+const fmtD=n=>(n>=0?'+':'')+Math.round(n).toLocaleString('fr-FR')+' €';
+const fmtP=p=>{
+ if(p===null||p===undefined||isNaN(p))return'<span class="pill pb">Nouveau</span>';
+ if(p>=30)return`<span class="pill pg">▲ +${p.toFixed(0)}%</span>`;
+ if(p>0)return`<span class="pill pn">+${p.toFixed(0)}%</span>`;
+ if(p>-30)return`<span class="pill pn">${p.toFixed(0)}%</span>`;
+ return`<span class="pill pr">▼ ${p.toFixed(0)}%</span>`;};
+
+/* Categories */
+const diag={"Autres":'<span class="pill pw">À rationaliser</span>',"Hélium":'<span class="pill pg">Pilier stable</span>',"Eco cups / Vaisselle":'<span class="pill pb">Volume driver</span>',"Fumigènes":'<span class="pill pg">Redressé ★</span>',"Fontaines":'<span class="pill pr">Maillon faible</span>',"Cierges magiques":'<span class="pill pg">Top marge</span>',"Jets de scène":'<span class="pill pg">Solide</span>',"Fusées / Artifices":'<span class="pill pb">Croissance ★</span>',"Pétards":'<span class="pill pw">Recomposé</span>',"Accessoires":'<span class="pill pn">Marginal</span>',"Confettis":'<span class="pill pn">Stable</span>',"Ballons / Déco":'<span class="pill pn">Marginal</span>'};
+document.getElementById('catBody').innerHTML=CATS.map(c=>{
+ const dca=c.ca26-c.ca25;
+ return`<tr>
+  <td class="pname">${c.c}</td>
+  <td class="num">${fmt(c.ca25)}</td><td class="num" style="font-weight:700">${fmt(c.ca26)}</td>
+  <td class="num ${dca>=0?'g':'r'}">${fmtD(dca)}</td>
+  <td>${fmtP(c.evol)}</td>
+  <td class="num">${fmt(c.m25)}</td><td class="num" style="font-weight:700">${fmt(c.m26)}</td>
+  <td class="num">${c.tx25}%</td>
+  <td class="num ${c.tx26>c.tx25?'g':c.tx26<c.tx25-2?'w':''}" style="font-weight:700">${c.tx26}%</td>
+  <td>${diag[c.c]||''}</td></tr>`}).join('');
+
+/* SKUs */
+let filt='all',srch='';
+const stPill={disparu:'<span class="pill pr">☠ Disparu</span>',quasi_mort:'<span class="pill pr">▼▼ Quasi-mort</span>',forte_baisse:'<span class="pill pw">▼ Forte baisse</span>',baisse:'<span class="pill pn">↘ Baisse</span>',stable:'<span class="pill pn">— Stable</span>',croissance:'<span class="pill pg">↗ Croissance</span>',explosion:'<span class="pill pg">▲▲ Explosion</span>',nouveau:'<span class="pill pb">★ Nouveau</span>'};
+function renderSkus(){
+ let d=SKUS;
+ if(filt!=='all')d=d.filter(s=>s.st===filt);
+ if(srch)d=d.filter(s=>s.s.toLowerCase().includes(srch)||s.p.toLowerCase().includes(srch)||s.c.toLowerCase().includes(srch));
+ // sort: by |d| descending for interest
+ d=[...d].sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
+ document.getElementById('skuBody').innerHTML=d.map(s=>`<tr>
+   <td><div class="pname" title="${s.p}">${s.p}</div><div class="psku">${s.s}</div></td>
+   <td><span class="pill pp">${s.c}</span></td>
+   <td class="num" style="color:var(--t3)">${fmt(s.ca25)}</td>
+   <td class="num" style="font-weight:700;color:var(--navy)">${fmt(s.ca26)}</td>
+   <td class="num ${s.d>=0?'g':'r'}">${fmtD(s.d)}</td>
+   <td>${fmtP(s.pct)}</td>
+   <td class="num" style="color:var(--t3)">${fmt(s.m25)}</td>
+   <td class="num ${s.m26>=0?'':'r'}">${fmt(s.m26)}</td>
+   <td class="num" style="color:var(--t3)">${s.q25.toLocaleString('fr-FR')}</td>
+   <td class="num">${s.q26.toLocaleString('fr-FR')}</td>
+   <td>${stPill[s.st]||''}</td></tr>`).join('');
+ const totCa25=d.reduce((a,s)=>a+s.ca25,0),totCa26=d.reduce((a,s)=>a+s.ca26,0),totD=d.reduce((a,s)=>a+s.d,0);
+ document.getElementById('skuCount').textContent=d.length+' SKUs affichés (tri par impact absolu)';
+ document.getElementById('skuTotals').textContent=`CA25: ${(totCa25/1000).toFixed(1)}k€ → CA26: ${(totCa26/1000).toFixed(1)}k€ (Δ ${(totD/1000).toFixed(1)}k€)`;
+}
+function fSku(f,el){filt=f;document.querySelectorAll('#statusFilters .fbtn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderSkus();}
+function sSku(v){srch=v.toLowerCase();renderSkus();}
+renderSkus();
+
+/* Lifecycle chart */
+new Chart('lifecycleChart',{type:'bar',data:{
+ labels:['Disparus\n(442)','Quasi-morts\n(51)','Forte baisse\n(156)','Baisse\n(50)','Stables\n(90)','Croissance\n(42)','Explosion\n(86)','Nouveaux\n(202)'],
+ datasets:[{data:[-99791,-35909,-127043,-13384,1249,8186,101301,29832],
+  backgroundColor:['#b42318','#d92d20','#f79009','#fdb022','#98a2b3','#32d583','#12b76a','#175cd3'],
+  borderRadius:6,borderWidth:0}]
+},options:{responsive:true,maintainAspectRatio:false,
+ plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.raw>=0?'+':'')+(c.raw/1000).toFixed(1)+' k€ de Δ CA'}}},
+ scales:{y:{grid:{color:'#f2f4f7'},ticks:{callback:v=>(v/1000).toFixed(0)+'k'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
+
+
+/* Gainers/Losers tables */
+document.getElementById('gBody').innerHTML=GAINERS.map(g=>`<tr>
+ <td><div class="pname">${g.p}</div><div class="psku">${g.s}</div></td>
+ <td class="num" style="color:var(--t3)">${fmt(g.ca25)}</td><td class="num" style="font-weight:700">${fmt(g.ca26)}</td>
+ <td class="num g" style="font-weight:700">${fmtD(g.d)}</td>
+ <td class="num">${fmt(g.m26)}</td></tr>`).join('');
+document.getElementById('lBody').innerHTML=LOSERS.map(l=>`<tr>
+ <td><div class="pname">${l.p}</div><div class="psku">${l.s}</div></td>
+ <td class="num" style="color:var(--t3)">${fmt(l.ca25)}</td><td class="num">${fmt(l.ca26)}</td>
+ <td class="num r" style="font-weight:700">${fmtD(l.d)}</td>
+ <td class="num">${fmt(l.m26)}</td></tr>`).join('');
+
+/* Synthesis */
+const GOOD=["Taux de marge +1,8 pt (19,6% → 21,4%)","Longue traîne nettoyée : 110 → 15 SKUs en perte","Helium_50er : +15,6 k€ CA, +3,5 k€ marge — star absolue","Fumigènes redressés : taux 12,1% → 22,5%","Fusées : +177,8% — nouveau relais de croissance validé","Panier moyen +11% (27,54 € → 30,57 €)","Bengales Prime (-PF) : lancement réussi, ~1,5 k€ marge"];
+const BAD=["CA −27,3% : le déficit de trafic Amazon persiste","Commandes −34,5% — cohérent avec GV −22% (BR Amazon)","Fontaines : −41% CA et 15% de marge — maillon faible","Cierges premium en recul (46-7UHB −69,6%)","Hélium : dépendance croissante à un seul SKU (Helium_50er)","Taux défectueux 4,65% (BR Amazon) — frein algorithmique","Titres modulaires : deadline 27 juillet dépassée"];
+const ACT=["Sécuriser le stock Helium_50er avant août (priorité 1)","Réviser les titres IA dans RLC sous 14 jours","Plan defect rate : audit des 12 commandes défectueuses","FBA sur le top 20 ASINs (41% du GMS FR)","Trancher : fontaines lot 100 → B2B ou décroissance","Corriger transport Helium_20erBLU dans PEPS","Amplifier fusées : stock + ads avant fin d'été"];
+const mk=(id,list,color)=>document.getElementById(id).innerHTML=list.map(t=>`<div class="syn-item"><span class="syn-dot" style="background:${color}"></span>${t}</div>`).join('');
+mk('synGood',GOOD,'#12b76a');mk('synBad',BAD,'#f04438');mk('synAct',ACT,'#f79009');
+
+/* Plan */
+const PLAN=[
+ {pr:"P0",prc:"#b42318",prbg:"#fef3f2",a:"Réviser les titres modulaires proposés par l'IA (RLC)",s:"Top 100 ASINs FR",i:"Éviter des titres IA sous-optimisés publiés automatiquement",e:"Sous 14 jours"},
+ {pr:"P0",prc:"#b42318",prbg:"#fef3f2",a:"Plan de réduction du taux de commandes défectueuses",s:"Toutes marketplaces",i:"Prérequis au ranking — 4,65% → <1%",e:"Août 2026"},
+ {pr:"P1",prc:"#b54708",prbg:"#fffaeb",a:"Sécuriser le stock et la Buy Box Helium_50er",s:"SKU leader (18,9 k€/mois)",i:"Protéger 25% de la marge hélium concentrée sur 1 ASIN",e:"Immédiat"},
+ {pr:"P1",prc:"#b54708",prbg:"#fffaeb",a:"Basculer le top 20 ASINs en FBA",s:"41% du GMS FR",i:"Prime Share stable, Buy Box IT/ES/DE, +36% ventes (bench Amazon)",e:"Sept. 2026"},
+ {pr:"P2",prc:"#175cd3",prbg:"#eff8ff",a:"Amplifier la catégorie Fusées (stock + Sponsored Products)",s:"31200, 31068, 70402",i:"Consolider le relais de croissance (+177,8%)",e:"Août 2026"},
+ {pr:"P2",prc:"#175cd3",prbg:"#eff8ff",a:"Arbitrage fontaines lot 100 : B2B avec prix plancher ou sortie",s:"120F60SX4-100x",i:"Stopper l'érosion (−14 k€ YoY, marge 10%)",e:"Sept. 2026"},
+ {pr:"P2",prc:"#175cd3",prbg:"#eff8ff",a:"Relance SEO + ads sur cierges magiques premium",s:"46-7UHB, FV-2UGQ",i:"Récupérer le trafic perdu sur la catégorie top marge (26,9%)",e:"Sept. 2026"},
+ {pr:"P3",prc:"#475467",prbg:"#f2f4f7",a:"Corriger le paramétrage transport dans PEPS",s:"Helium_20erBLU + audit global",i:"Fiabiliser le reporting marge",e:"Août 2026"}
+];
+document.getElementById('planBody').innerHTML=PLAN.map(p=>`<tr>
+ <td><span class="prio" style="color:${p.prc};background:${p.prbg}">${p.pr}</span></td>
+ <td style="font-weight:600;white-space:normal;min-width:230px">${p.a}</td>
+ <td style="white-space:normal;color:var(--t2)">${p.s}</td>
+ <td style="white-space:normal;color:var(--t2);min-width:200px">${p.i}</td>
+ <td class="mono" style="font-size:11.5px">${p.e}</td></tr>`).join('');
+
+/* NAV */
+function go(id,el){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+ document.getElementById('p-'+id).classList.add('active');
+ el.classList.add('active');
+ window.scrollTo({top:0});
+}
+</script>
+</body>
+</html>
