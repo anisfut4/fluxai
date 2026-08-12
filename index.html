@@ -1043,7 +1043,7 @@ option{background:#1a1a23}
         </div>
         <div class="fg">
           <label class="fl">Directives supplémentaires</label>
-          <textarea class="ft" id="peps-directives" rows="2" placeholder="ex: Corriger les erreurs de casse du rapport CDQ, mettre en avant Made in France, ton premium..."></textarea>
+          <textarea class="ft" id="peps-directives" rows="2" placeholder="Instructions prioritaires - agit comme pré-prompt. Ex: Mentionne Made in France, ton premium B2B, insiste sur l'aspect festif..."></textarea>
         </div>
       </div>
 
@@ -1194,6 +1194,23 @@ function pepsTitleCase(str) {
 
 // Sanitize text — replace all special/curly characters with plain ASCII equivalents
 // Fixes CRM/legacy system compatibility issues where special chars render as "?"
+// Smart truncate — ALWAYS cuts at last complete word boundary, NEVER mid-word, NEVER exceeds maxLen
+function pepsSmartTruncate(str, maxLen) {
+  if (!str || str.length <= maxLen) return str;
+  const cut = str.substring(0, maxLen);
+  // If the char right after the cut is a space or the cut ends exactly on a boundary, keep as-is
+  if (str.charAt(maxLen) === ' ' || cut.endsWith(',') || cut.endsWith(' ')) {
+    return cut.replace(/[,\s]+$/, '');
+  }
+  // Otherwise find the last space within the cut and stop there — never mid-word
+  const lastSpace = cut.lastIndexOf(' ');
+  const lastComma = cut.lastIndexOf(',');
+  const boundary = Math.max(lastSpace, lastComma);
+  if (boundary > 0) return cut.substring(0, boundary).replace(/[,\s]+$/, '');
+  // No word boundary found at all (single very long word) — return empty rather than break the limit or cut mid-word
+  return '';
+}
+
 function pepsSanitize(str) {
   if (!str) return '';
   return String(str)
@@ -1387,7 +1404,15 @@ async function pepsEnrich() {
 
   const systemPrompt = `Tu es le meilleur expert mondial en optimisation de fiches produits Amazon France. Tu travailles pour Sparklers Club et ton objectif est le grade CDQ "A" sur chaque fiche. Tu enrichis des fiches pour la plateforme Peps (diffusion marketplace Amazon FR/BE/IT/DE).
 
-CONTEXTE: L'audit CDQ du catalogue a révélé les défauts exacts qui pénalisent les fiches. Tes règles ci-dessous sont calibrées pour les éliminer TOUS.
+${directives ? `═══════════════════════════════════════════
+⚠️ INSTRUCTIONS PRIORITAIRES DU CLIENT — À RESPECTER AVANT TOUT LE RESTE
+═══════════════════════════════════════════
+${directives}
+Ces instructions priment sur les exemples et suggestions ci-dessous. Si elles entrent en conflit avec un exemple donné plus bas dans ce prompt, applique TOUJOURS les instructions du client. Les exemples fournis plus loin sont génériques et illustratifs uniquement — n'insère AUCUNE information (origine, certification, lieu de fabrication, etc.) qui ne provient PAS des données produit fournies OU de ces instructions prioritaires.
+
+` : `RÈGLE IMPORTANTE: Ne mentionne AUCUNE information non fournie dans les données produit (origine, certification, lieu de fabrication, etc.). Les exemples ci-dessous sont génériques et illustratifs — ne pas copier leur contenu factuel, seulement leur structure.
+
+`}CONTEXTE: L'audit CDQ du catalogue a révélé les défauts exacts qui pénalisent les fiches. Tes règles ci-dessous sont calibrées pour les éliminer TOUS.
 
 ═══════════════════════════════════════════
 DÉFAUT #1 A ÉLIMINER — CASSE INCORRECTE (60% du catalogue pénalisé)
@@ -1395,7 +1420,7 @@ DÉFAUT #1 A ÉLIMINER — CASSE INCORRECTE (60% du catalogue pénalisé)
 RÈGLE DE CASSE STRICTE pour Titre ET Titre Amazon:
 - Chaque mot commence par une MAJUSCULE puis minuscules: "Couleur" pas "couleur", "Facile" pas "facile", "Ras Bord" pas "ras bord", "Or" pas "or", "Tout" pas "tout", "Ballons" pas "ballons", "Artifice" pas "artifice", "Machine" pas "machine", "Canon" pas "canon"
 - EXCEPTIONS en minuscules UNIQUEMENT: prépositions (de, du, des, en, à, au, aux, avec, pour, par, sur, sous, dans, sans), conjonctions (et, ou, ni), articles (le, la, les, un, une)
-- INTERDIT ABSOLU: mots entièrement en MAJUSCULES. "MADE IN FRANCE" → "Made in France". "ECOCUP" → "Ecocup". "INCASSABLE" → "Incassable". "FLUO" → "Fluo". Aucune exception, même pour l'emphase.
+- INTERDIT ABSOLU: mots entièrement en MAJUSCULES. "ECOCUP" → "Ecocup". "INCASSABLE" → "Incassable". "FLUO" → "Fluo". "PROFESSIONNEL" → "Professionnel". Aucune exception, même pour l'emphase.
 - INTERDIT: casse aléatoire type "FLuorescents" — vérifie chaque mot.
 - Cette règle s'applique dans TOUTES les langues (français, italien, allemand: "ideale"→"Ideale", "feste"→"Feste", "compleanni"→"Compleanni")
 
@@ -1420,6 +1445,7 @@ DÉFAUT #3 — MOTS REDONDANTS (mots répétés >2 fois)
 ═══════════════════════════════════════════
 STRUCTURE TITRE AMAZON (Item Name) — 75 CARACTÈRES MAX STRICT
 ═══════════════════════════════════════════
+⚠️ MARGE DE SÉCURITÉ OBLIGATOIRE: cible 65-72 caractères, JAMAIS plus de 75. Si tu hésites entre deux versions, choisis la plus courte.
 - ORDRE OBLIGATOIRE: Marque > Type de Produit > Attribut Clé > Couleur/Taille/Quantité
 - Chiffres en numéraux TOUJOURS: "50" pas "cinquante"
 - INTERDIT: caractères décoratifs (!, $, ?, _, {, }, ^, ★, <<, >>), emojis, ™ ® ©
@@ -1437,18 +1463,20 @@ TITRE LEGACY (200 chars max) — mêmes règles de casse, plus complet
 ═══════════════════════════════════════════
 HIGHLIGHT AMAZON (Item Type Highlights) — 125 CARACTÈRES MAX STRICT
 ═══════════════════════════════════════════
+⚠️ MARGE DE SÉCURITÉ OBLIGATOIRE: cible 110-120 caractères, JAMAIS plus de 125. Compte les caractères avant de répondre.
 - Groupes de mots courts séparés par virgules — PAS de phrases
 - Contenu prioritaire: matériau exact, certifications, dimensions, compatibilités, usage
 - Chaque groupe commence par une Majuscule
-- Exemple: "Polypropylène PP, Sans BPA, Made in France, Lave-Vaisselle, 100% Recyclable, Empilable"
+- Exemple: "Polypropylène PP, Sans BPA, Lave-Vaisselle, 100% Recyclable, Empilable, Résistant"
 
 ═══════════════════════════════════════════
 BULLETS — EXACTEMENT 6, MAX 200 CHARS CHACUN (audit: 141 fiches avec 0-1 bullets = grade D direct)
 ═══════════════════════════════════════════
+⚠️ MARGE DE SÉCURITÉ OBLIGATOIRE: cible 170-190 caractères par bullet, JAMAIS plus de 200. Compte avant de répondre.
 - STRUCTURE OBLIGATOIRE: "En-Tête Court : description détaillée avec bénéfice concret et mot-clé SEO"
 - Exemples calibrés:
   "Résistant et Durable : supporte jusqu'à 150 cycles de lave-vaisselle sans déformation ni perte de transparence"
-  "Fabrication Française : produit à Lyon dans une usine certifiée CE, polypropylène alimentaire sans BPA"
+  "Qualité Professionnelle : polypropylène alimentaire certifié CE, résistant aux chocs et aux hautes températures"
 - Commence par Majuscule, PAS de point final
 - Chaque bullet = information UNIQUE (zéro répétition entre bullets, zéro répétition du titre)
 - Chiffres 1-9 en toutes lettres SAUF mesures/modèles ("deux faces" mais "25 cl", "lot de 6")
@@ -1491,7 +1519,6 @@ RÈGLES GÉNÉRALES
 - Marque si vide = ${defaultBrand}
 - ENFANTS: contenu UNIQUE adapté aux attributs spécifiques de la variation — le titre enfant inclut sa couleur/taille/lot, les bullets adaptent les usages au format (petit lot = usage familial, gros lot = pro/événementiel)
 - Aucun tiret long (– —), aucune apostrophe courbe, aucun caractère spécial exotique
-${directives ? '- DIRECTIVES SUPPLÉMENTAIRES: ' + directives : ''}
 
 ═══════════════════════════════════════════
 ATTRIBUTS STRUCTURÉS (score CDQ 0.48 — le pire du catalogue, à corriger en priorité)
@@ -1585,7 +1612,13 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
 
         if (!res.ok) {
           const errText = await res.text();
-          throw new Error(`HTTP ${res.status} — ${errText.substring(0,100) || 'réponse vide'}`);
+          let errMsg = errText;
+          try {
+            const errJson = JSON.parse(errText);
+            errMsg = errJson.error?.message || errJson.message || errText;
+          } catch(_) {}
+          console.error(`Peps HTTP ${res.status} for SKU ${sku}:`, errText);
+          throw new Error(`HTTP ${res.status} — ${errMsg.substring(0,180) || 'réponse vide'}`);
         }
 
         const data = await res.json();
@@ -1604,17 +1637,17 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
         const canWrite = (col, checked) => checked || !String(enriched[col]||'').trim();
 
         if (canWrite('Titre', F.titre))
-          enriched['Titre'] = pepsTitleCase(pepsSanitize(gen.titre || '')).substring(0, 200);
+          enriched['Titre'] = pepsSmartTruncate(pepsTitleCase(pepsSanitize(gen.titre || '')), 200);
         if (canWrite('Titre Amazon', F.titreAmz))
-          enriched['Titre Amazon'] = pepsTitleCase(pepsSanitize(gen.titre_amazon || gen.titre || '')).substring(0, 75);
+          enriched['Titre Amazon'] = pepsSmartTruncate(pepsTitleCase(pepsSanitize(gen.titre_amazon || gen.titre || '')), 75);
         if (canWrite('Highlight Amazon', F.highlight))
-          enriched['Highlight Amazon'] = pepsSanitize(gen.highlight_amazon || '').substring(0, 125);
+          enriched['Highlight Amazon'] = pepsSmartTruncate(pepsSanitize(gen.highlight_amazon || ''), 125);
         if (!enriched['Marque']) enriched['Marque'] = pepsSanitize(gen.marque || defaultBrand);
 
         // Bullets — individual checkbox per bullet (1-6)
         (gen.bullets || []).slice(0,6).forEach((b, bi) => {
           const col = `Bullet point ${bi+1}`;
-          if (canWrite(col, F.bullets[bi])) enriched[col] = pepsSanitize(b).substring(0,200);
+          if (canWrite(col, F.bullets[bi])) enriched[col] = pepsSmartTruncate(pepsSanitize(b), 200);
         });
 
         if (canWrite('Description courte', F.descCourte))
@@ -1663,7 +1696,7 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
     if (!success) {
       dot.textContent = '✗'; dot.style.color = 'var(--er)';
       sub.textContent = 'Erreur: ' + (lastErr?.message||'').substring(0,50);
-      warnings.push(`SKU ${sku}: ${(lastErr?.message||'').substring(0,60)}`);
+      warnings.push(`SKU ${sku}: ${(lastErr?.message||'').substring(0,140)}`);
     }
 
     completedCount++;
@@ -1721,11 +1754,11 @@ function pepsExport() {
   pepsEnriched.forEach(row => {
     const line = PEPS_HEADERS.map(h => {
       let val = row[h] !== undefined ? pepsSanitize(String(row[h])) : '';
-      if (h === 'Titre') val = val.substring(0,200);
-      if (h === 'Titre Amazon') val = val.substring(0,75);
-      if (h === 'Highlight Amazon') val = val.substring(0,125);
-      if (h.startsWith('Bullet point')) val = val.substring(0,200);
-      if (h === 'Mots-clés backend') val = val.substring(0,100);
+      if (h === 'Titre') val = pepsSmartTruncate(val,200);
+      if (h === 'Titre Amazon') val = pepsSmartTruncate(val,75);
+      if (h === 'Highlight Amazon') val = pepsSmartTruncate(val,125);
+      if (h.startsWith('Bullet point')) val = pepsSmartTruncate(val,200);
+      if (h === 'Mots-clés backend') val = pepsSmartTruncate(val,100);
       if (h === 'Marque' && !val) val = defaultBrand;
       return val;
     });
