@@ -1047,10 +1047,23 @@ option{background:#1a1a23}
         </div>
       </div>
 
-      <button class="btn btn-p" id="peps-gen-btn" style="width:100%;justify-content:center;margin-top:4px" onclick="pepsEnrich()" disabled>
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M8 3l5 5-5 5"/></svg>
-        <span id="peps-gen-label">Enrichir les fiches</span>
-      </button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-p" id="peps-gen-btn" style="flex:1;justify-content:center;margin-top:4px" onclick="pepsEnrich()" disabled>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M8 3l5 5-5 5"/></svg>
+          <span id="peps-gen-label">Enrichir les fiches</span>
+        </button>
+        <button class="btn btn-g" id="peps-pause-btn" style="display:none;margin-top:4px;padding:0 14px" onclick="pepsTogglePause()" title="Pause">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12"/><rect x="9.5" y="2" width="3.5" height="12"/></svg>
+        </button>
+      </div>
+      <div id="peps-resume-banner" style="display:none;margin-top:8px;padding:10px;background:rgba(245,200,64,.08);border:1px solid rgba(245,200,64,.25);border-radius:var(--r);font-size:11px">
+        <div style="font-weight:600;color:var(--acc);margin-bottom:4px">⏸ Session interrompue détectée</div>
+        <div style="color:var(--mu);margin-bottom:8px" id="peps-resume-info"></div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-p" style="flex:1;padding:6px;font-size:11px;justify-content:center" onclick="pepsResumeSession()">Reprendre</button>
+          <button class="cbtn" onclick="pepsDiscardSession()">Ignorer</button>
+        </div>
+      </div>
     </div>
 
     <!-- Col 2: Progression + Résultats -->
@@ -1349,7 +1362,74 @@ function pepsLoadFile(file) {
   }
 }
 
-async function pepsEnrich() {
+// ============ PEPS PAUSE / RESUME / PERSISTENCE ============
+let pepsPaused = false;
+let pepsPauseRequested = false;
+const PEPS_STORAGE_KEY = 'fluxai_peps_session';
+
+function pepsSaveSession(state) {
+  try {
+    localStorage.setItem(PEPS_STORAGE_KEY, JSON.stringify({
+      timestamp: Date.now(),
+      pepsRows, pepsEnriched, ...state
+    }));
+  } catch(e) { console.warn('Peps session save failed:', e.message); }
+}
+
+function pepsCheckSavedSession() {
+  try {
+    const raw = localStorage.getItem(PEPS_STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (!saved.pepsRows?.length || saved.completedCount >= saved.total) {
+      localStorage.removeItem(PEPS_STORAGE_KEY);
+      return;
+    }
+    const ageMin = Math.round((Date.now() - saved.timestamp) / 60000);
+    document.getElementById('peps-resume-banner').style.display = '';
+    document.getElementById('peps-resume-info').textContent =
+      `${saved.completedCount}/${saved.total} lignes traitées · il y a ${ageMin < 1 ? 'moins d\'1 min' : ageMin+' min'}`;
+    window._pepsSavedSession = saved;
+  } catch(e) { console.warn('Peps session check failed:', e.message); }
+}
+
+function pepsDiscardSession() {
+  localStorage.removeItem(PEPS_STORAGE_KEY);
+  document.getElementById('peps-resume-banner').style.display = 'none';
+  window._pepsSavedSession = null;
+}
+
+function pepsResumeSession() {
+  const saved = window._pepsSavedSession;
+  if (!saved) return;
+  pepsRows = saved.pepsRows;
+  pepsEnriched = saved.pepsEnriched;
+  document.getElementById('peps-resume-banner').style.display = 'none';
+  document.getElementById('peps-gen-btn').disabled = false;
+  document.getElementById('peps-gen-label').textContent = `Enrichir ${pepsRows.length} ligne(s)`;
+  // Show file loaded state so user knows data is in
+  document.getElementById('peps-drop-placeholder').style.display = 'none';
+  document.getElementById('peps-drop-loaded').style.display = '';
+  document.getElementById('peps-file-name').textContent = 'Session reprise';
+  document.getElementById('peps-file-info').textContent = `${pepsRows.length} lignes restaurées`;
+  pepsEnrich(saved.doneIndices || []);
+}
+
+function pepsTogglePause() {
+  const btn = document.getElementById('peps-pause-btn');
+  if (!pepsPaused) {
+    pepsPauseRequested = true;
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 5-10 5V3z"/></svg>`;
+    btn.title = 'Reprendre';
+  } else {
+    pepsPaused = false;
+    pepsPauseRequested = false;
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12"/><rect x="9.5" y="2" width="3.5" height="12"/></svg>`;
+    btn.title = 'Pause';
+  }
+}
+
+async function pepsEnrich(resumeDone = []) {
   if (!pepsRows.length) return;
   if (!S.apiKey) { alert('Clé Claude manquante dans Paramètres'); return; }
 
@@ -1372,12 +1452,18 @@ async function pepsEnrich() {
   // ALL rows get unique content — parent + enfant
   const allRows = pepsRows;
   const total = allRows.length;
+  const doneSet = new Set(resumeDone);
 
   // UI setup
   document.getElementById('peps-result-empty').style.display = 'none';
   document.getElementById('peps-progress').style.display = 'flex';
   document.getElementById('peps-results-list').style.display = 'none';
   document.getElementById('peps-gen-btn').disabled = true;
+  document.getElementById('peps-pause-btn').style.display = '';
+  pepsPaused = false;
+  pepsPauseRequested = false;
+  document.getElementById('peps-pause-btn').innerHTML = `<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12"/><rect x="9.5" y="2" width="3.5" height="12"/></svg>`;
+  document.getElementById('peps-resume-banner').style.display = 'none';
 
   const progressList = document.getElementById('peps-progress-list');
   progressList.innerHTML = allRows.map((r,i) => {
@@ -1386,21 +1472,26 @@ async function pepsEnrich() {
     const badge = isChild
       ? `<span style="font-size:8px;background:rgba(245,200,64,.15);color:var(--acc);border-radius:3px;padding:1px 5px;border:1px solid rgba(245,200,64,.3)">enfant</span>`
       : `<span style="font-size:8px;background:rgba(56,184,114,.15);color:var(--ok);border-radius:3px;padding:1px 5px;border:1px solid rgba(56,184,114,.3)">parent</span>`;
+    const isDone = doneSet.has(i);
     return `
     <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--b1)">
-      <div id="peps-prog-dot-${i}" style="font-size:12px;flex-shrink:0;color:var(--mu2)">○</div>
+      <div id="peps-prog-dot-${i}" style="font-size:12px;flex-shrink:0;color:${isDone?'var(--ok)':'var(--mu2)'}">${isDone?'✓':'○'}</div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:5px">
           ${badge}
           <span style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}</span>
         </div>
-        <div style="font-size:9px;color:var(--mu);font-family:'DM Mono',monospace" id="peps-prog-sub-${i}">En attente</div>
+        <div style="font-size:9px;color:var(--mu);font-family:'DM Mono',monospace" id="peps-prog-sub-${i}">${isDone?'Déjà traité':'En attente'}</div>
       </div>
     </div>`;
   }).join('');
 
-  pepsEnriched = allRows.map(r => ({...r}));
+  if (!pepsEnriched.length || pepsEnriched.length !== allRows.length) {
+    pepsEnriched = allRows.map(r => ({...r}));
+  }
   const warnings = [];
+  let completedCount = doneSet.size;
+  document.getElementById('peps-progress-bar').style.width = `${Math.round(completedCount/total*100)}%`;
 
   const systemPrompt = `Tu es le meilleur expert mondial en optimisation de fiches produits Amazon France. Tu travailles pour Sparklers Club et ton objectif est le grade CDQ "A" sur chaque fiche. Tu enrichis des fiches pour la plateforme Peps (diffusion marketplace Amazon FR/BE/IT/DE).
 
@@ -1535,7 +1626,6 @@ RÈGLE: n'invente RIEN — infère uniquement depuis les données fournies. Si u
 
 Retourne UNIQUEMENT du JSON valide, sans markdown, sans backticks:
 {"titre":"...max 200c casse correcte...","titre_amazon":"...max 75c strict Marque>Type>Attribut>Variation casse correcte...","highlight_amazon":"...max 125c groupes mots Majuscule virgule...","marque":"...","bullets":["En-Tête : description","En-Tête : description","En-Tête : description","En-Tête : description","En-Tête : description","En-Tête : description"],"description_courte":"...max 500c...","description_longue":"...max 2000c 4 paragraphes...","mots_cles_recherche":"...espaces minuscules zero-mot-du-titre 200c...","mots_cles_backend":"...complementaires espaces minuscules 100c...","attributs":{"couleur":"...","materiau":"...","theme":"...","pays_origine":"...","occasions":["occ1","occ2","occ3","occ4"],"public_cible_1":"...","public_cible_2":"...","type_article":"..."}}`;
-  let completedCount = 0;
 
   async function processRow(i) {
     const row = allRows[i];
@@ -1700,16 +1790,40 @@ ${isChild && varAttrs ? `IMPORTANT: Cette ligne est une VARIATION spécifique ($
     }
 
     completedCount++;
+    doneSet.add(i);
     document.getElementById('peps-progress-bar').style.width = `${Math.round(completedCount/total*100)}%`;
   }
 
-  // Process in parallel batches of 5 — much faster than sequential
-  const BATCH_SIZE = 5;
+  // Process in parallel batches — faster + pausable + auto-saved
+  const BATCH_SIZE = 8;
   for (let b = 0; b < total; b += BATCH_SIZE) {
+    // Handle pause: wait here between batches if user requested pause
+    if (pepsPauseRequested) {
+      pepsPaused = true;
+      pepsSaveSession({ completedCount, total, doneIndices: [...doneSet] });
+      document.getElementById('peps-progress-bar-wrap').style.opacity = '0.4';
+      const pauseLabel = document.createElement('div');
+      pauseLabel.id = 'peps-pause-indicator';
+      pauseLabel.style.cssText = 'font-size:11px;color:var(--acc);text-align:center;padding:8px;background:rgba(245,200,64,.08);border-radius:6px;margin-bottom:8px';
+      pauseLabel.textContent = `⏸ En pause — ${completedCount}/${total} traités · progression sauvegardée`;
+      document.getElementById('peps-progress').prepend(pauseLabel);
+      while (pepsPauseRequested) { await new Promise(r => setTimeout(r, 300)); }
+      pepsPaused = false;
+      document.getElementById('peps-progress-bar-wrap').style.opacity = '1';
+      document.getElementById('peps-pause-indicator')?.remove();
+    }
     const batch = [];
-    for (let i = b; i < Math.min(b + BATCH_SIZE, total); i++) batch.push(processRow(i));
+    for (let i = b; i < Math.min(b + BATCH_SIZE, total); i++) {
+      if (!doneSet.has(i)) batch.push(processRow(i));
+    }
     await Promise.all(batch);
+    // Auto-save progress after every batch
+    pepsSaveSession({ completedCount, total, doneIndices: [...doneSet] });
   }
+
+  // Success — clear saved session
+  localStorage.removeItem(PEPS_STORAGE_KEY);
+  document.getElementById('peps-pause-btn').style.display = 'none';
 
   document.getElementById('peps-progress-bar').style.width = '100%';
 
@@ -1789,7 +1903,7 @@ const S = {
   _csvIdx:0,_csvOk:0,_csvErr:0,
 };
 document.getElementById('api-inp').value = S.apiKey;
-updApiDot(); renderHist(); slotSelInit(); pepsModeChanged();
+updApiDot(); renderHist(); slotSelInit(); pepsModeChanged(); pepsCheckSavedSession();
 
 // ============ NAVIGATION ============
 function setMode(m) {
